@@ -9,7 +9,7 @@ whenToUse: "Before submitting or integrating database changes."
 whenToUpdate: "When test commands, qualification scope or CI changes."
 checkPaths: [scripts/**, tests/**, .github/workflows/**, .docpact/**]
 lastReviewedAt: 2026-10-15
-lastReviewedCommit: d07a7c4a1c98e63d0efd3f41b99bc40b5fe2baf9
+lastReviewedCommit: 33c3b417182b72349e36d0b6cf44a26e4be31c2c
 ---
 
 # Validation
@@ -142,3 +142,28 @@ both the pinned local runtime and hosted runtime. A rollback-scoped SQL probe
 checks private/API error separation and preserves unexpected serialization
 failures. This prevents a local-only HTTP 500 assertion from hiding hosted
 transaction retries.
+
+
+S9 adds `tests/runtime/legacy_permissions.sql` and `legacy_permissions_api.py` to fresh and populated-upgrade gates. They qualify PUBLIC inheritance, actual ordinary-role SQL/HTTP denial, custom-worker minimal grants, and seven service worker RPC effects. The current catalog accepts only the reviewed 18-function/23-table ACL delta. See [legacy-permissions.md](legacy-permissions.md) for consumer coverage and release limits.
+
+With the Next #88 candidate, `run_web_edge.py --only next` requires exact safe
+403 for all six legacy groups' POST/PATCH/DELETE, anonymous-write 401, unchanged
+stored rows and no insert residue. Source hashes in its receipt bind the tested
+Route Handlers and store; durable PR evidence also records both repository SHAs.
+This fixes the previous consumer 500 blocker locally but does not qualify
+hosted defaults, actual worker login identities or authorize release.
+
+
+The local-only `tests/consumers/unstructure_role_boundary.py` adds real LOGIN qualification and explicit queue/snapshot failure boundaries; run it through the owned consumer runtime. `test_worker_role_boundary.py` rejects mismatched ports, ownership and nonlocal targets without DB access. See [S9 role evidence](s9-role-consumer-evidence.md). This is a separate consumer test, not automatically part of database-only CI.
+
+
+For S9 complete local worker orchestration, use `unstructure_worker_flow.py` in
+`tests/consumers/README.md`. It runs the real five Unstructure `run_once` paths
+with a fresh non-superuser LOGIN and real PostgreSQL/pgmq. Run both fresh-head
+and `--acl-upgrade` modes; the latter reconstructs only the precise pre-S9 ACL
+delta with a queued fixture, not all old function bodies. The full database
+gate independently covers prior-chain replay/upgrade. Next consumer qualification
+also runs actual index/delete schedulers with real PostgREST and index ledger.
+Only external provider/artifact transports are doubled. These consumers remain
+separate from database-only CI and require reviewed sibling sources/dependencies.
+See [the development result and deployment gates](s9-development-validation.md).

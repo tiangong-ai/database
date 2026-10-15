@@ -101,3 +101,96 @@ Run offline runtime safety checks with:
 ```sh
 python3 -m unittest discover -s tests/consumers -p 'test_runtime_safety.py'
 ```
+
+
+## S9 permission consumers
+
+`run_web_edge.py` also exercises actual Next API-key create/list/rotate/revoke,
+Jobs and course-search bearer authorization. Course Redis is a cache-miss double;
+valid/invalid/revoked tokens are verified against the real local database.
+Use `knowledge-base/.venv/bin/python tests/consumers/unstructure_permissions.py
+<owned-local-target.json>` from the workspace (adjust script path from root)
+for seven unchanged Unstructure psycopg adapters under service_role. Its source
+SHA-256 is reported. Only the local target mode is allowed. S9 adapter/HTTP
+fixtures are removed by stopping the owned stack, not generic fixture cleanup.
+
+
+For the stronger S9 identity boundary probe, run from this repository:
+
+```sh
+../knowledge-base/.venv/bin/python tests/consumers/unstructure_role_boundary.py --target /private/tmp/consumer-session-unique/target.json
+```
+
+It requires an owned local session, verifies container labels and its database port, then creates a fresh restricted LOGIN and runs actual adapters with test-only grants. The JSON distinguishes passing RPCs from queue/snapshot schema and RLS gaps, and always sets whole_worker_qualified/production_role_verified to false. It does not accept production or preview. The test login/grants are removed even on failure; stop the owned stack to remove synthetic rows. Do not use generic fixture cleanup as a substitute for stop. Source hashes, the phase grant contract and safe diagnostics exclude credentials. `python3 -m unittest discover -s tests/consumers -p 'test_*.py'` includes its offline targeting checks. See [the source inventory and pending online read packet](../../docs/s9-role-consumer-evidence.md).
+
+
+## S9 complete local worker scheduling
+
+From database, using a newly started owned local session:
+
+```sh
+../unstructure/.venv/bin/python tests/consumers/unstructure_worker_flow.py --target /private/tmp/consumer-session-unique/target.json
+../unstructure/.venv/bin/python tests/consumers/unstructure_worker_flow.py --target /private/tmp/consumer-session-unique/target.json --acl-upgrade
+```
+
+The runtime requires Unstructure's existing requests/psycopg2/boto3 dependencies.
+It never loads operator environment files. Five unchanged schedulers execute
+actual SQL/queue operations as a fresh NOSUPERUSER/BYPASSRLS login with explicit
+13 RPC, schema, snapshot and queue grants; this nonowner test profile emulates
+needed observed postgres capabilities, not its identity or complete ownership.
+A second restricted login runs the same scheduler and must fail with 42501
+before claim. Temporary role lifecycle uses only the owned container's platform
+admin. No production role/grant recipe is implied.
+
+Parser/embedding HTTP is loopback-only, NAS is a temporary directory, and only
+S3 object transport is replaced; artifact writes, S3 manifest/size/hash checks,
+lease/claim/finalization/retry/reconciliation remain real. Receipts distinguish
+fresh head from a populated **ACL-delta** upgrade; full prior-chain replay
+remains in `scripts/test-database.sh`. Stop the stack afterwards to remove all
+synthetic archives/audit records, even if a run fails.
+
+The Next web runner now includes real `runIndexWorkerOnce`/`runDeleteWorkerOnce`,
+record ledger and queue completion with external artifact/index/cleanup doubles.
+Use a separate fresh consumer session with `fixtures.py setup`, so its index
+reconciliation cannot pick up Python-flow documents. Both runners are bounded
+local development qualification for these commands, not external-provider or hosted deployment E2E.
+
+## S9 explicitly authorized disposable Preview
+
+Prepare the private target with the existing `prepare-preview` command above,
+after a fresh Management API/MCP branch read. For the following commands the
+receipt must additionally contain `branch_id`, `is_default: false` and
+`persistent: false`. Its parent must be the KB production project, while its
+own ref must be different. Persistent Dev, LCA, production, stale/mismatched
+receipts and remote URL overrides are rejected before application imports or
+connections. Creation, paid usage, fixture writes and branch cleanup require
+the operator's explicit authorization; a receipt is not authorization.
+
+```sh
+../unstructure/.venv/bin/python tests/consumers/unstructure_worker_flow.py --target /private/tmp/preview-session-unique/target.json --preview-ref PREVIEW_REF
+python3 tests/consumers/preview_api_boundary.py --target /private/tmp/preview-session-unique/target.json --preview-ref PREVIEW_REF
+```
+
+The worker mode requires an empty job table and parse/S3 queues, verifies the
+actual Preview postgres login is NOSUPERUSER/BYPASSRLS, and adds **no worker
+grants**. It runs the same complete scheduler scenarios using existing Preview
+ownership/privileges. The negative scheduler uses a fresh NOINHERIT/NOBYPASSRLS
+login with no object grants, removed by exact `DROP ROLE`; hosted PG17 need not
+grant SET ROLE authority for `DROP OWNED`. Production identity/membership is
+not inferred. `--acl-upgrade` is forbidden in Preview, so this mode cannot
+reopen ordinary ACLs. External providers remain loopback/file doubles.
+
+The HTTP boundary runner uses `fixtures.py setup`'s synthetic actor and records
+26 denied calls across the 13 non-trigger restricted RPCs, ordinary table-write
+denials, journal authenticated/anonymous reads and rejection of an actual
+`private` table profile. OpenAPI-root access is not a schema-exposure probe.
+The existing Next/Edge and journal runners also accept verified Preview targets;
+run worker scenarios sequentially, with cleanup, to avoid cross-consumption.
+`verify_catalog.py` uses the canonical current-chain comparator, including
+resource objects, rather than comparing only the original public fixture.
+
+Fixture cleanup and local `stop` do not delete hosted branches or all synthetic
+archive/audit rows. Finish by deleting **only the exact disposable branch created
+for this run**, verify its absence through Management metadata, and remove local
+Preview credentials. Hosted success does not create an official GitHub App check,
+authorize merge/production deployment or qualify real provider delivery.

@@ -9,7 +9,7 @@ whenToUse: "When reviewing the production-derived legacy baseline or running con
 whenToUpdate: "When capture scope, privacy guarantees, parity or business-path validation changes."
 checkPaths: [supabase/migrations/**, tests/schema/**, tests/consumers/**, docs/legacy-schema-inventory.json]
 lastReviewedAt: 2026-10-15
-lastReviewedCommit: d07a7c4a1c98e63d0efd3f41b99bc40b5fe2baf9
+lastReviewedCommit: 33c3b417182b72349e36d0b6cf44a26e4be31c2c
 ---
 
 # Knowledge Base legacy schema baseline
@@ -80,10 +80,13 @@ users. Existing table ACLs include broad DML/TRUNCATE grants and the helper
 new security model. RLS does not protect TRUNCATE via direct SQL. Any tightening
 belongs to a separate reviewed access-policy change.
 
-Ordinary Next resource writes are expected to be denied or affect no rows under
-these policies. The existing DELETE handler may report success for zero deleted
-rows; qualification checks the actual stored row remains unchanged. `has_service_role`
-is a database lookup helper, not validation of a service JWT.
+The original baseline's ordinary Next writes were denied or affected no rows;
+DELETE could report success for zero deleted rows. S9 narrows the ACLs separately,
+so current consumer qualification requires safe 403 for all six groups' writes
+with the paired Next #88 fix, plus unchanged rows and anonymous-write 401.
+This is an intentional delta from the historical baseline, not a replacement
+of its captured facts. `has_service_role` is a database lookup helper, not
+validation of a service JWT.
 
 ## Business qualification
 
@@ -153,3 +156,15 @@ immutable; the Jobs migration is a reviewed forward change. The local gate
 continues enforcing all other captured attributes, including that function's
 ACL/signature/settings. The original production fingerprint is preserved in Git
 history; a current-head expectation is not evidence of production application.
+
+
+S9 intentionally narrows 18 function and 23 table ACLs; only those catalog fields change. All legacy objects and policy behavior remain, except ordinary writes now fail explicitly. See [the exact matrix and release boundary](legacy-permissions.md).
+
+
+S9 follow-up consumer qualification also distinguishes direct LOGIN RPC access from queue and snapshot dependencies. [Role evidence](s9-role-consumer-evidence.md) records actual adapter tests, existing local schema/RLS gaps, source versions and owner-confirmed indirect skill/Edge callers. It does not modify the captured schema or claim a deployed identity.
+
+
+The [S9 development validation](s9-development-validation.md) now adds complete
+local scheduler lifecycles, retaining real database/Auth/PostgREST interactions.
+It records exact source hashes and separates observed-capability emulation from
+hosted role identity; no extra production grants or schema relocation follow.
