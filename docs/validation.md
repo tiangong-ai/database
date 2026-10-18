@@ -8,8 +8,8 @@ language: en
 whenToUse: "Before submitting or integrating database changes."
 whenToUpdate: "When test commands, qualification scope or CI changes."
 checkPaths: [scripts/**, tests/**, .github/workflows/**, .docpact/**]
-lastReviewedAt: 2026-10-15
-lastReviewedCommit: 33c3b417182b72349e36d0b6cf44a26e4be31c2c
+lastReviewedAt: 2026-10-18
+lastReviewedCommit: 59abb9666c37ef67096de45e0b8fd103b52c9f5c
 ---
 
 # Validation
@@ -167,3 +167,17 @@ also runs actual index/delete schedulers with real PostgREST and index ledger.
 Only external provider/artifact transports are doubled. These consumers remain
 separate from database-only CI and require reviewed sibling sources/dependencies.
 See [the development result and deployment gates](s9-development-validation.md).
+
+## S2 gateway gate
+
+[S2](api-key-management.md) adds `api_key_catalog.expected.json` without changing
+the existing public/resource expected definitions. The resource boundary check
+now composes with the four explicitly allowed authenticated API-key functions;
+its own table/helper/RPC grants remain exact. Full replay executes
+`api_key_boundary.sql` and `api_key_management.py` both fresh and after upgrade.
+The final upgrade step seeds the exact pre-S2 chain with active, revoked and
+expired legacy keys, compares complete rows, and proves unchanged verification.
+The local HTTP test injects INSERT/audit failures, verifies aborted-request retry,
+and observes both rotation requests blocked by the same row-lock dependency
+chain before releasing the barrier. Real Next/Edge compatibility remains a
+separate sequential consumer run, not a substitute for v1 session tests.

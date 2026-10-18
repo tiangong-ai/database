@@ -8,8 +8,8 @@ language: en
 whenToUse: "When reviewing the production-derived legacy baseline or running consumer qualification."
 whenToUpdate: "When capture scope, privacy guarantees, parity or business-path validation changes."
 checkPaths: [supabase/migrations/**, tests/schema/**, tests/consumers/**, docs/legacy-schema-inventory.json]
-lastReviewedAt: 2026-10-15
-lastReviewedCommit: 33c3b417182b72349e36d0b6cf44a26e4be31c2c
+lastReviewedAt: 2026-10-18
+lastReviewedCommit: 59abb9666c37ef67096de45e0b8fd103b52c9f5c
 ---
 
 # Knowledge Base legacy schema baseline
@@ -168,3 +168,8 @@ The [S9 development validation](s9-development-validation.md) now adds complete
 local scheduler lifecycles, retaining real database/Auth/PostgREST interactions.
 It records exact source hashes and separates observed-capability emulation from
 hosted role identity; no extra production grants or schema relocation follow.
+
+S2 adds the [API-key gateway](api-key-management.md) and a separate additive
+catalog fixture. All legacy public objects and M1 objects retain their exact
+catalog expectations; no baseline regeneration accepts this addition. Only
+authenticated schema USAGE and four new function grants expand the API surface.

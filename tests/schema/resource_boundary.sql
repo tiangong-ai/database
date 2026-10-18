@@ -15,10 +15,12 @@ begin
  end loop;
  foreach r in array array['anon','authenticated','service_role'] loop
   if has_schema_privilege(r,'private','CREATE') or has_schema_privilege(r,'api','CREATE') then raise exception 'schema CREATE grant: %',r; end if;
-  if r<>'service_role' and (has_schema_privilege(r,'private','USAGE') or has_schema_privilege(r,'api','USAGE')) then raise exception 'untrusted schema usage: %',r; end if;
+  if r<>'service_role' and has_schema_privilege(r,'private','USAGE') then raise exception 'untrusted private schema usage: %',r; end if;
+  -- S2 grants api USAGE for its four authenticated RPCs; resource EXECUTE stays service-only.
+  if has_schema_privilege(r,'api','USAGE') is distinct from (r in ('authenticated','service_role')) then raise exception 'api schema usage drift: %',r; end if;
  end loop;
- if (select count(*) from pg_proc where pronamespace='api'::regnamespace)<>2
- or exists(select from pg_class where relnamespace='api'::regnamespace and relkind in ('r','v','m','p')) then raise exception 'api must contain exactly two functions and no tables/views'; end if;
+ if (select count(*) from pg_proc where pronamespace='api'::regnamespace and proname like 'kb_resource_%')<>2
+ or exists(select from pg_class where relnamespace='api'::regnamespace and relkind in ('r','v','m','p')) then raise exception 'api must contain exactly two resource functions and no tables/views'; end if;
  if exists(select from pg_proc where pronamespace='public'::regnamespace and proname like 'kb_resource_%') then raise exception 'old public resource function remains'; end if;
  foreach f in array array['kb_resource_command(uuid,uuid,text,uuid,jsonb)','kb_resource_get(uuid,uuid,uuid)'] loop
   foreach r in array array['anon','authenticated','service_role'] loop

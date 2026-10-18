@@ -8,8 +8,8 @@ language: en
 whenToUse: "When integrating M1 resource registration, review or PDF publication."
 whenToUpdate: "When resource RPCs, identity, permissions, snapshots or recovery change."
 checkPaths: [supabase/migrations/*_kb_resource*.sql, tests/runtime/resource_*.py, tests/schema/resource_boundary.sql, tests/upgrade/resource_*.sql]
-lastReviewedAt: 2026-10-15
-lastReviewedCommit: 951192ce32389c43c4a54f1638aea59ef7550e1a
+lastReviewedAt: 2026-10-18
+lastReviewedCommit: 59abb9666c37ef67096de45e0b8fd103b52c9f5c
 ---
 
 # M1 resource identity and document association
@@ -335,3 +335,8 @@ implementation retains its SQL contract; genuine unrelated serialization
 failures are rethrown. The invoker boundary, search path, OID and ACL remain
 unchanged. HTTP tests require prompt 409 responses and verify that idempotency,
 stale-revision and lifecycle-busy conflicts cannot enter transaction retry.
+
+S2 composes four authenticated API-key functions in the shared `api` schema.
+Schema USAGE alone does not grant resource access: both M1 RPC EXECUTE grants,
+private table ACLs and private helper grants remain unchanged and tested.
+The [API-key contract](api-key-management.md) is independent of M1-03 behavior.

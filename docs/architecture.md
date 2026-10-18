@@ -8,8 +8,8 @@ language: en
 whenToUse: "When deciding source ownership, schema scope or generated-path boundaries."
 whenToUpdate: "When schema ownership, imported scope or consumer contracts change."
 checkPaths: [supabase/**, scripts/**, tests/sql/**, docs/source-inventory.json]
-lastReviewedAt: 2026-10-15
-lastReviewedCommit: 951192ce32389c43c4a54f1638aea59ef7550e1a
+lastReviewedAt: 2026-10-18
+lastReviewedCommit: 59abb9666c37ef67096de45e0b8fd103b52c9f5c
 ---
 
 # Database architecture
@@ -115,3 +115,11 @@ avoids treating a permanent business conflict as a retriable database transactio
 
 
 S9 narrows only legacy public ACLs under [legacy-permissions.md](legacy-permissions.md). It keeps object locations, bodies, RLS, M1-03 and legacy-role explicit grants; deployment is separately gated.
+
+## S2 additive API-key gateway
+
+[API-key management v1](api-key-management.md) adds four authenticated-session
+RPCs and a private receipt ledger. Caller identity comes from Auth claims;
+legacy public key storage and service verifiers are unchanged. The api schema
+has authenticated USAGE, while each function retains explicit EXECUTE grants;
+M1 resource RPCs remain service-role-only.

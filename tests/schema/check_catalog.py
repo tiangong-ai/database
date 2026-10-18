@@ -27,12 +27,13 @@ def main():
     fixture='pre_resource_catalog.expected.json' if a.baseline_only else 'public_catalog.expected.json'
     expected=json.loads(Path(__file__).with_name(fixture).read_text())
     if not a.baseline_only:
-        additions=json.loads(Path(__file__).with_name('resource_catalog.expected.json').read_text())
-        for kind in ('relations','functions'):
-            original={r['name'] for r in expected[kind]}
-            if any(r['name'] in original for r in additions[kind]):
-                raise SystemExit('Additive catalog must not replace legacy objects')
-            expected[kind] += additions[kind]
+        for fixture in ('resource_catalog.expected.json', 'api_key_catalog.expected.json'):
+            additions=json.loads(Path(__file__).with_name(fixture).read_text())
+            for kind in ('relations','functions'):
+                original={r['name'] for r in expected[kind]}
+                if any(r['name'] in original for r in additions[kind]):
+                    raise SystemExit('Additive catalog must not replace existing objects')
+                expected[kind] += additions[kind]
     actual=json.loads(a.actual.read_text());diff=differences(expected,actual)
     print(json.dumps({'catalog_parity':'failed' if diff else 'passed','relations':len(actual['relations'] or []),'functions':len(actual['functions'] or []),'differences':diff}))
     if diff:raise SystemExit(1)

@@ -8,8 +8,8 @@ language: en
 whenToUse: "When exporting schema, authoring migrations or selecting a database target."
 whenToUpdate: "When helper CLI contracts, dependencies or adoption steps change."
 checkPaths: [scripts/**, supabase/config.toml, .env.*.example]
-lastReviewedAt: 2026-10-15
-lastReviewedCommit: 33c3b417182b72349e36d0b6cf44a26e4be31c2c
+lastReviewedAt: 2026-10-18
+lastReviewedCommit: 59abb9666c37ef67096de45e0b8fd103b52c9f5c
 ---
 
 # Development
@@ -167,3 +167,12 @@ points only to the owned local database, temporary file tree and loopback
 provider listener. Local platform admin is used solely for temporary role
 lifecycle; worker connections assert NOSUPERUSER and their own BYPASSRLS flag.
 All production permissions and schemas remain unchanged.
+
+## S2 development qualification
+
+The [S2 contract](api-key-management.md) uses the existing local toolchain.
+`tests/runtime/api_key_management.py <owned-local-target.json>` exercises real
+Auth/PostgREST plus SQL failure/lock barriers; it refuses hosted targets. Run
+these mutation/failure-injection scenarios sequentially with other consumers
+on the same disposable stack. The full database gate invokes it on fresh and
+populated upgraded stacks. No production environment file is used.

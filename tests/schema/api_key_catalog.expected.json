@@ -1,0 +1,387 @@
+{
+  "relations": [
+    {
+      "acl": [
+        {
+          "grantee": "postgres",
+          "grantable": false,
+          "privilege": "DELETE"
+        },
+        {
+          "grantee": "postgres",
+          "grantable": false,
+          "privilege": "INSERT"
+        },
+        {
+          "grantee": "postgres",
+          "grantable": false,
+          "privilege": "MAINTAIN"
+        },
+        {
+          "grantee": "postgres",
+          "grantable": false,
+          "privilege": "REFERENCES"
+        },
+        {
+          "grantee": "postgres",
+          "grantable": false,
+          "privilege": "SELECT"
+        },
+        {
+          "grantee": "postgres",
+          "grantable": false,
+          "privilege": "TRIGGER"
+        },
+        {
+          "grantee": "postgres",
+          "grantable": false,
+          "privilege": "TRUNCATE"
+        },
+        {
+          "grantee": "postgres",
+          "grantable": false,
+          "privilege": "UPDATE"
+        }
+      ],
+      "rls": true,
+      "kind": "r",
+      "name": "private.kb_api_key_requests",
+      "owner": "postgres",
+      "columns": [
+        {
+          "name": "actor_id",
+          "type": "uuid",
+          "default": null,
+          "identity": "",
+          "not_null": true,
+          "generated": ""
+        },
+        {
+          "name": "request_id",
+          "type": "uuid",
+          "default": null,
+          "identity": "",
+          "not_null": true,
+          "generated": ""
+        },
+        {
+          "name": "operation",
+          "type": "text",
+          "default": null,
+          "identity": "",
+          "not_null": true,
+          "generated": ""
+        },
+        {
+          "name": "payload_hash",
+          "type": "text",
+          "default": null,
+          "identity": "",
+          "not_null": true,
+          "generated": ""
+        },
+        {
+          "name": "key_id",
+          "type": "uuid",
+          "default": null,
+          "identity": "",
+          "not_null": true,
+          "generated": ""
+        },
+        {
+          "name": "created_at",
+          "type": "timestamp with time zone",
+          "default": "now()",
+          "identity": "",
+          "not_null": true,
+          "generated": ""
+        }
+      ],
+      "indexes": [
+        {
+          "name": "kb_api_key_requests_pkey",
+          "definition": "CREATE UNIQUE INDEX kb_api_key_requests_pkey ON private.kb_api_key_requests USING btree (actor_id, request_id)"
+        }
+      ],
+      "policies": [],
+      "triggers": [],
+      "force_rls": false,
+      "constraints": [
+        {
+          "name": "kb_api_key_requests_operation_check",
+          "type": "c",
+          "validated": true,
+          "definition": "CHECK (operation = ANY (ARRAY['create'::text, 'revoke'::text, 'rotate'::text]))"
+        },
+        {
+          "name": "kb_api_key_requests_payload_hash_check",
+          "type": "c",
+          "validated": true,
+          "definition": "CHECK (payload_hash ~ '^[0-9a-f]{64}$'::text)"
+        },
+        {
+          "name": "kb_api_key_requests_pkey",
+          "type": "p",
+          "validated": true,
+          "definition": "PRIMARY KEY (actor_id, request_id)"
+        }
+      ]
+    }
+  ],
+  "functions": [
+    {
+      "acl": [
+        {
+          "grantee": "postgres",
+          "grantable": false,
+          "privilege": "EXECUTE"
+        }
+      ],
+      "cost": 100,
+      "name": "private.kb_api_key_actor_v1",
+      "rows": 0,
+      "owner": "postgres",
+      "strict": false,
+      "returns": "uuid",
+      "body_md5": "ebfcd58a7203c66bf3c7a6cee3f83671",
+      "language": "plpgsql",
+      "parallel": "u",
+      "arguments": "",
+      "leakproof": false,
+      "volatility": "s",
+      "configuration": [
+        "search_path=pg_catalog"
+      ],
+      "full_arguments": "",
+      "security_definer": false
+    },
+    {
+      "acl": [
+        {
+          "grantee": "postgres",
+          "grantable": false,
+          "privilege": "EXECUTE"
+        }
+      ],
+      "cost": 100,
+      "name": "private.kb_api_key_command_v1",
+      "rows": 0,
+      "owner": "postgres",
+      "strict": false,
+      "returns": "jsonb",
+      "body_md5": "dc4f97eeeedb33607d5753bb7a909589",
+      "language": "plpgsql",
+      "parallel": "u",
+      "arguments": "p_operation text, p_request_id uuid, p_payload jsonb",
+      "leakproof": false,
+      "volatility": "v",
+      "configuration": [
+        "search_path=pg_catalog"
+      ],
+      "full_arguments": "p_operation text, p_request_id uuid, p_payload jsonb",
+      "security_definer": false
+    },
+    {
+      "acl": [
+        {
+          "grantee": "authenticated",
+          "grantable": false,
+          "privilege": "EXECUTE"
+        },
+        {
+          "grantee": "postgres",
+          "grantable": false,
+          "privilege": "EXECUTE"
+        }
+      ],
+      "cost": 100,
+      "name": "api.kb_api_key_create_v1",
+      "rows": 0,
+      "owner": "postgres",
+      "strict": false,
+      "returns": "jsonb",
+      "body_md5": "328b224e29f8a2f2bb53060aa1e75c29",
+      "language": "sql",
+      "parallel": "u",
+      "arguments": "p_request_id uuid, p_payload jsonb",
+      "leakproof": false,
+      "volatility": "v",
+      "configuration": [
+        "search_path=pg_catalog"
+      ],
+      "full_arguments": "p_request_id uuid, p_payload jsonb",
+      "security_definer": true
+    },
+    {
+      "acl": [
+        {
+          "grantee": "authenticated",
+          "grantable": false,
+          "privilege": "EXECUTE"
+        },
+        {
+          "grantee": "postgres",
+          "grantable": false,
+          "privilege": "EXECUTE"
+        }
+      ],
+      "cost": 100,
+      "name": "api.kb_api_key_list_v1",
+      "rows": 0,
+      "owner": "postgres",
+      "strict": false,
+      "returns": "jsonb",
+      "body_md5": "84959d18937712085ac37b739c635df6",
+      "language": "plpgsql",
+      "parallel": "u",
+      "arguments": "p_limit integer, p_offset integer",
+      "leakproof": false,
+      "volatility": "s",
+      "configuration": [
+        "search_path=pg_catalog"
+      ],
+      "full_arguments": "p_limit integer DEFAULT 100, p_offset integer DEFAULT 0",
+      "security_definer": true
+    },
+    {
+      "acl": [
+        {
+          "grantee": "postgres",
+          "grantable": false,
+          "privilege": "EXECUTE"
+        }
+      ],
+      "cost": 100,
+      "name": "private.kb_api_key_manage_v1",
+      "rows": 0,
+      "owner": "postgres",
+      "strict": false,
+      "returns": "boolean",
+      "body_md5": "5536e7c72fbbf6b50655dabbd31b820b",
+      "language": "sql",
+      "parallel": "u",
+      "arguments": "p_actor uuid, p_key kb_api_keys",
+      "leakproof": false,
+      "volatility": "s",
+      "configuration": [
+        "search_path=pg_catalog"
+      ],
+      "full_arguments": "p_actor uuid, p_key kb_api_keys",
+      "security_definer": false
+    },
+    {
+      "acl": [
+        {
+          "grantee": "postgres",
+          "grantable": false,
+          "privilege": "EXECUTE"
+        }
+      ],
+      "cost": 100,
+      "name": "private.kb_api_key_metadata_v1",
+      "rows": 0,
+      "owner": "postgres",
+      "strict": false,
+      "returns": "jsonb",
+      "body_md5": "51a7f5890a25d569d0535b0ca96c8118",
+      "language": "sql",
+      "parallel": "u",
+      "arguments": "p_key kb_api_keys",
+      "leakproof": false,
+      "volatility": "s",
+      "configuration": [
+        "search_path=pg_catalog"
+      ],
+      "full_arguments": "p_key kb_api_keys",
+      "security_definer": false
+    },
+    {
+      "acl": [
+        {
+          "grantee": "authenticated",
+          "grantable": false,
+          "privilege": "EXECUTE"
+        },
+        {
+          "grantee": "postgres",
+          "grantable": false,
+          "privilege": "EXECUTE"
+        }
+      ],
+      "cost": 100,
+      "name": "api.kb_api_key_revoke_v1",
+      "rows": 0,
+      "owner": "postgres",
+      "strict": false,
+      "returns": "jsonb",
+      "body_md5": "e74bb6235b1dce277c4538f08c55b81a",
+      "language": "sql",
+      "parallel": "u",
+      "arguments": "p_key_id uuid, p_request_id uuid, p_reason text",
+      "leakproof": false,
+      "volatility": "v",
+      "configuration": [
+        "search_path=pg_catalog"
+      ],
+      "full_arguments": "p_key_id uuid, p_request_id uuid, p_reason text DEFAULT NULL::text",
+      "security_definer": true
+    },
+    {
+      "acl": [
+        {
+          "grantee": "authenticated",
+          "grantable": false,
+          "privilege": "EXECUTE"
+        },
+        {
+          "grantee": "postgres",
+          "grantable": false,
+          "privilege": "EXECUTE"
+        }
+      ],
+      "cost": 100,
+      "name": "api.kb_api_key_rotate_v1",
+      "rows": 0,
+      "owner": "postgres",
+      "strict": false,
+      "returns": "jsonb",
+      "body_md5": "8e5ff13126e7744fc71f0098a67783e9",
+      "language": "sql",
+      "parallel": "u",
+      "arguments": "p_key_id uuid, p_request_id uuid, p_reason text",
+      "leakproof": false,
+      "volatility": "v",
+      "configuration": [
+        "search_path=pg_catalog"
+      ],
+      "full_arguments": "p_key_id uuid, p_request_id uuid, p_reason text DEFAULT NULL::text",
+      "security_definer": true
+    },
+    {
+      "acl": [
+        {
+          "grantee": "postgres",
+          "grantable": false,
+          "privilege": "EXECUTE"
+        }
+      ],
+      "cost": 100,
+      "name": "private.kb_api_key_scope_v1",
+      "rows": 0,
+      "owner": "postgres",
+      "strict": false,
+      "returns": "void",
+      "body_md5": "c9d871f61f5ec112f58bbb73d1b666fa",
+      "language": "plpgsql",
+      "parallel": "u",
+      "arguments": "p_actor uuid, p_target uuid, p_scopes text[], p_collections text[]",
+      "leakproof": false,
+      "volatility": "s",
+      "configuration": [
+        "search_path=pg_catalog"
+      ],
+      "full_arguments": "p_actor uuid, p_target uuid, p_scopes text[], p_collections text[]",
+      "security_definer": false
+    }
+  ]
+}

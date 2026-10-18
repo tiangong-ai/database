@@ -46,6 +46,7 @@ def main() -> None:
     assert 'kb_resource_command' in actual_types and re.search(r'"?api"?\s*:', actual_types), \
         "The actual local TypeScript output must include the api resource RPC contract"
     assert 'kb_resource_entries' not in actual_types, "API types must not expose private storage"
+    assert 'kb_api_key_create_v1' in actual_types and 'kb_api_key_requests' not in actual_types
     print("Real local schema export, offline object workspace and TypeScript generation passed.")
 
 

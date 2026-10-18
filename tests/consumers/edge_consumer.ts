@@ -73,6 +73,34 @@ try {
     results.push({consumer:'course_search:real bearer RPC valid/invalid/revoked',passed:true,cache:'external double always misses'});
   }finally{const cleanup=await service.from('kb_api_keys').delete().eq('id',inserted.data.id);assert(!cleanup.error,'Course fixture cleanup failed');}
 
+  // S2-generated and rotated secrets must work through the unchanged real handler.
+  const sessionClient=createClient(url,key,{auth:{persistSession:false}});
+  const login=await sessionClient.auth.signInWithPassword({email:target.user.email,password:target.user.password});
+  assert(!login.error,'S2 Edge fixture login failed');
+  const s2Ids:string[]=[];
+  try {
+    const created=await sessionClient.schema('api').rpc('kb_api_key_create_v1',{
+      p_request_id:crypto.randomUUID(),p_payload:{name:'S2 course',client_id:fixture.marker,
+        scopes:['kb:read'],collection_scope:['/course/thu_humanities/'+fixture.marker]}});
+    assert(!created.error && created.data?.token,'S2 Edge fixture key creation failed');
+    s2Ids.push(created.data.apiKey.id);
+    const call=async(bearer:string)=>await fetch(base+'/course_search',{method:'POST',headers:{'content-type':'application/json',authorization:'Bearer '+bearer},body:JSON.stringify({query:fixture.marker,topK:1})});
+    assert((await call(created.data.token)).status===200,'Course rejected S2 generated token');
+    const rotated=await sessionClient.schema('api').rpc('kb_api_key_rotate_v1',{p_key_id:s2Ids[0],p_request_id:crypto.randomUUID()});
+    assert(!rotated.error && rotated.data?.token,'S2 Edge fixture rotation failed');
+    s2Ids.push(rotated.data.apiKey.id);
+    assert((await call(created.data.token)).status===401,'Course accepted S2 rotated old token without cache');
+    assert((await call(rotated.data.token)).status===200,'Course rejected S2 rotated token');
+    const revoked=await sessionClient.schema('api').rpc('kb_api_key_revoke_v1',{p_key_id:s2Ids[1],p_request_id:crypto.randomUUID()});
+    assert(!revoked.error,'S2 Edge fixture revoke failed');
+    assert((await call(rotated.data.token)).status===401,'Course accepted S2 revoked token without cache');
+    results.push({consumer:'course_search:S2 session RPC generated/rotated/revoked tokens',passed:true,cache:'external double always misses'});
+  } finally {
+    if(s2Ids.length){const deleted=await service.from('kb_api_keys').delete().in('id',s2Ids);assert(!deleted.error,'S2 Edge key cleanup failed');}
+    // Private receipts/audits are removed by owner-scoped fixtures.py cleanup.
+    await sessionClient.auth.signOut();
+  }
+
   let response=await request('edu_search',{action:'list_filter_options',fields:['course','name','chapter_number'],filter:{course:[fixture.edu_course]}});
   assert(response.status===200,'edu facet authenticated HTTP failed');
   assert(response.data.matched_records>=1,'edu facet returned no synthetic records');
