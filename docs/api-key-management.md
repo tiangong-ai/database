@@ -129,8 +129,11 @@ delivered exactly once across network failures. After an uncertain commit,
 repeat the **same request** to learn its key ID without minting another secret.
 If the first secret was lost, revoke that resulting key and create a replacement,
 or rotate the resulting key with a new request ID. Never blindly retry with a
-new request ID. A deleted legacy row yields `API_KEY_RECEIPT_UNAVAILABLE` rather
+new request ID. A missing resulting key in a creation/rotation receipt yields
+`API_KEY_RECEIPT_UNAVAILABLE` rather
 than recreating a key. Replays recheck authorization before revealing metadata.
+An expired creation can still return its receipt (without a token); creation
+expiry validation applies only when minting, not when recovering an old result.
 
 Receipts are intentionally retained without automatic expiry: deleting one
 would allow a previously used creation request to mint another key. They contain

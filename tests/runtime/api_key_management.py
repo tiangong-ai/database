@@ -2,6 +2,7 @@
 """S2 real Auth/PostgREST, transaction failures and concurrent sessions; owned local only."""
 import base64
 import concurrent.futures
+from datetime import datetime, timedelta, timezone
 import hashlib
 import json
 import os
@@ -143,6 +144,13 @@ try:
     sql(f"update public.kb_api_keys set expires_at='2020-01-01' where id='{expiring_id}';")
     expect(rpc('kb_api_key_rotate_v1',key_args(expiring_id),user),409,'expired rotation')
     assert verify(expiring['token'])['code']=='expired_token'
+    expiring_request=uid()
+    short_lived={**base,'expires_at':(datetime.now(timezone.utc)+timedelta(seconds=2)).isoformat()}
+    first_expiry=expect(create(short_lived,request_id=expiring_request),200,'short-lived creation')
+    token_values.append(first_expiry['token'])
+    time.sleep(2.1)
+    replay_expiry=expect(create(short_lived,request_id=expiring_request),200,'expired creation receipt remains recoverable')
+    assert replay_expiry['replayed'] and replay_expiry['token'] is None and replay_expiry['apiKey']['id']==first_expiry['apiKey']['id']
     passed('token format / legacy verify+authorize / metadata / scoped delegation / concurrent create replay / expiry')
     # Inject actual INSERT and audit failures after revoke; transaction must undo all effects.
     for table in ('kb_api_keys','kb_audit_events'):

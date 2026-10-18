@@ -169,7 +169,7 @@
       "owner": "postgres",
       "strict": false,
       "returns": "jsonb",
-      "body_md5": "623e6786495eaafa963c31eccfbb0f63",
+      "body_md5": "dc4f97eeeedb33607d5753bb7a909589",
       "language": "plpgsql",
       "parallel": "u",
       "arguments": "p_operation text, p_request_id uuid, p_payload jsonb",

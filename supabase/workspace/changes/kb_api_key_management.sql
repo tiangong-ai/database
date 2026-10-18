@@ -130,7 +130,8 @@ begin
     v_scopes := array(select distinct s from unnest(v_scopes) s order by s);
     v_collections := array(select distinct public.kb_normalize_collection_path(s) from unnest(v_collections) s order by 1);
     v_expires := (p_payload->>'expires_at')::timestamptz;
-    if v_expires is not null and (not isfinite(v_expires) or v_expires<=statement_timestamp()) then
+    if v_request.request_id is null and v_expires is not null
+       and (not isfinite(v_expires) or v_expires<=statement_timestamp()) then
       raise sqlstate 'PT400' using message='API_KEY_INVALID_EXPIRY';
     end if;
   else
