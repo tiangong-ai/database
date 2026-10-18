@@ -1,0 +1,224 @@
+{
+  "schema_version": 1,
+  "run_id": "8293d407d7c94020bbb3bf69ef13d005",
+  "mode": "local",
+  "source_sha256": {
+    "web-app/package.json": "d3125f6ee1723a400efdf422c326969f30ed2056896cde8f3444bbebd6dd1048",
+    "web-app/tsconfig.json": "7e3bf87de8f191c1cdcad00dba5a54fc5508dc711c7268457072e35ee0abce3e",
+    "web-app/lib/kb/resource-config.ts": "7410adecbdc6e4c3a93bd6420184693de751c1e6d1206138f0fa0e1f480997ef",
+    "web-app/lib/kb/resource-store.ts": "df88202ce09ca678d1bdc7d61f0a1fb7687f7d4140c9289256dc8e1ec292770f",
+    "web-app/lib/supabase/admin.ts": "c30aae1470847e0455a49de2719d8065021b31da361c45ca3cc6b2c3790bf658",
+    "web-app/lib/supabase/service-role.ts": "d95d15677537f8e2118ffeeb5ce50242e062b322aa3c063280ac669b11a9b001",
+    "web-app/lib/server/env.ts": "ff1f45d1780d983f515271a66240a574d80ff1cfdd80a3e8380ad12706d77405",
+    "web-app/lib/supabase/env.ts": "46b668fecae017cd194fddb7cedc982da4e7e2fc0d2c681b07f39f0a10d8a691",
+    "web-app/lib/supabase/server.ts": "cf9ea3dcba08a4353916ca4bc0167969dff7f5aa10d3a8333cd43584fa224bff",
+    "web-app/app/api/kb/resources/[collection]/route.ts": "b486218f87447fe196733b2e1dcc52a9d0e50f933c0760b6c040b06fe10d6cc7",
+    "web-app/app/api/kb/resources/[collection]/[id]/route.ts": "dc009c84910f61429d9c8af210446497688c02245662afdeff7b8341fa9b5d55",
+    "web-app/app/api/kb/admin/api-keys/route.ts": "f2b2cdd4d3fc8f72495a534cda6621500ed7d34cf0a40ad7717c110477905b13",
+    "web-app/app/api/kb/admin/api-keys/[keyId]/revoke/route.ts": "6b9a71cfdb7ff81332a656d997586220fd2311047ddda75f1086f506e868eeea",
+    "web-app/app/api/kb/admin/api-keys/[keyId]/rotate/route.ts": "dfd778089fc837a65f9e10ecdd5b89bc13fb82d0f0f69acfc9f9451d53431a67",
+    "web-app/app/api/kb/admin/jobs/route.ts": "03ca9aa26866f9679de4c330be9163bedb7036454f4296a8c7672d5500f809ca",
+    "web-app/lib/kb/admin-contracts.ts": "f2683069b21b5a863df50f7689088c3a9c34ea05368d8aa439e96901d999bb92",
+    "web-app/lib/kb/admin-store.ts": "67d5cbca26d5570384fb9e32712493f525c4a26fd85802b24d6c35f7aa6edf70",
+    "web-app/lib/kb/api-errors.ts": "e49546c55895b1b9b795989eb41fa90d0e2342b6f0260978c1185a797bc3cfb1",
+    "web-app/lib/kb/api-key-contracts.ts": "1e05f1f6d664b628653cc24ed1ed0619bc391e398a19e4383ffaf56a50930475",
+    "web-app/lib/kb/api-key-store.ts": "dc5396ae7fb7490345dc01b82855ceaaa7c813fb46d43efe2f4be6845ca031f9",
+    "web-app/lib/kb/api-key-tokens.ts": "6b33f38f5c6285b490a9454dcfc40a470e497ff5c91cdab7b733dcb1bbf56f19",
+    "web-app/lib/kb/collection-admin-store.ts": "827b4f0433af35af1aca8eb3f996df67d93c2317fc06dafe80e1c539ef08a443",
+    "web-app/lib/kb/collection-store.ts": "183f7fb362c279f40a323fc8b041a47de04ba492814949376ee66d2f817ea9c8",
+    "web-app/lib/kb/contracts.ts": "b8068fefcd9e5164dc6d3a8da9c20ab51dd0d5f2a6f5b5eb75618573238fdbeb",
+    "web-app/lib/kb/delete-worker-supabase.ts": "1e6b7eae918477bbdad93faaca978efa480b4fb78f5582284ac1b48a42ea816a",
+    "web-app/lib/kb/delete-worker.ts": "f0bc40a3f035f6cb5649094e1f05b152b7804e00e44e043d352c824d20224f56",
+    "web-app/lib/kb/document-actions.ts": "0fd5b12cfd486a2f0c460e67ccfd8f16e9dcd10bec17e1463bbf569f4a2a2abc",
+    "web-app/lib/kb/document-ingest.ts": "f4ce567813df93104e4fe5bfdbf42214b955f6b5efece6ab41fe0fd7ebf043af",
+    "web-app/lib/kb/external-api.ts": "112b1eff3d0bb0e049485f3ac9928b4cec082587ab41be72c181c8f247aad236",
+    "web-app/lib/kb/external-index-target.ts": "2190af06c6772cd249599ff382c53b7716bdc51ca5cf29a676cda3324010f190",
+    "web-app/lib/kb/index-worker-supabase.ts": "c87a0d6d4ac7f0be23a9c255003235bcf503449c9b25704ab95f6dc47f78a4c3",
+    "web-app/lib/kb/index-worker.ts": "a24dd643cd8e6a52baf9eda0259fdc825e0206e2f51744110f6e614cc2e11717",
+    "web-app/lib/kb/metadata-schema.ts": "83f81ae3cd756dd799005d69a3bedee5d4bac7448995a5eda2b02289cf823cef",
+    "web-app/lib/kb/processed-artifacts-s3.ts": "389fbf0e80ca87fbea4e01901cac901632892a7ec8d29ccdbe85f504c7fe67e0",
+    "web-app/lib/kb/processed-artifacts.ts": "54a9194d5dc80da9899df623aa0b7e49eda48c57cfd5e2bc69e29f541f45d35f",
+    "web-app/lib/kb/raw-storage.ts": "2171d3ec26aa32904b9de75c6c78fd36f621f6f70d68ed841bc4cd199170fe6d",
+    "web-app/lib/kb/search-index-schema.ts": "1ac083780af9697f19727392bb4c999567b02d4977f33073ca1af7e287c1ec2e",
+    "web-app/lib/kb/status-contracts.ts": "eb6fb7c028fe12b408b86054d82227356e1cd7c09720d58f8f0222664f098255",
+    "database/tests/consumers/worker_route.ts": "ced0fff6206a6134e78ec6715adaa877cc3f2f2da6c5193328b43ac62e7ebe85",
+    "database/tests/consumers/next_consumer.mjs": "8bf147fa235992f3d52216b2dcdd074553fad7da20a1cd95f95c4702230935a5",
+    "edge-functions/supabase/functions/_shared/cors.ts": "d5cdff4e2a0bb1aa5ed8b243806d6cd9bba52449fc89613bd4200fde722977a1",
+    "edge-functions/supabase/functions/_shared/decode_api_key.ts": "24c00d5b26ead320a45871ff64d577288ca1d3cd0cd620f8ddceb0d60d3478a4",
+    "edge-functions/supabase/functions/_shared/document_synonyms.ts": "22f0a4bd74101eebfc70c6978b28ed6fb3d2fa26b251d48adf8df909b1dcda25",
+    "edge-functions/supabase/functions/_shared/email_auth_cache.ts": "92e734550b691e5f032f6554dc41526d53359ccf8ecb13b4773b56a35de7210d",
+    "edge-functions/supabase/functions/_shared/generate_query.ts": "fe9ddee58ba646e06735f5e232ea5197fdff0a2fb0a2d9954a91effb68b946a0",
+    "edge-functions/supabase/functions/_shared/generate_query_en.ts": "5a310f6eb637c4225f3e1c76aba51e02cb02daa7c264cabea30bdd9a7d13bedf",
+    "edge-functions/supabase/functions/_shared/openai_client.ts": "289c65fb504dddd706edf61f2f09ce723649b9da849cdaa2f4c3bf9e06ba30c1",
+    "edge-functions/supabase/functions/_shared/openai_embedding.ts": "a9d49cb8c045005ba18662eb7f0ac3b93625ed674b22988bcfaed1020c3a9000",
+    "edge-functions/supabase/functions/_shared/openai_generation.ts": "8896a03bc7b21b27b19426769db0e88ddb388102e4c997348073020655b9a5d5",
+    "edge-functions/supabase/functions/_shared/openai_structured.ts": "5660a9debf34a592c4ec4e3afad31084b4a154ddaa842b112e542857e4b8b68e",
+    "edge-functions/supabase/functions/_shared/openai_structured_task.ts": "d3c39968871c521addf90d5be93719eae8b8b9b63a2310842c98f229c644329a",
+    "edge-functions/supabase/functions/_shared/search_query_utils.ts": "738c551f60c3d527fd6f2917097cab66f2ba2c43af706464f969fab9097595ce",
+    "edge-functions/supabase/functions/_shared/supabase_auth.ts": "e9cdff44b494144562a93958547d16c32754392f82083729d69f4a14f3951980",
+    "edge-functions/supabase/functions/_shared/supabase_function_log.ts": "2a1fd0a2614b6272853cd79bada7a9ddef1aa85af102abbb2954f32cd11eb202",
+    "edge-functions/supabase/functions/edu_search/index.ts": "9b3111442bae7b639ceee55305c217a3f4accaafb06e6353211cc240c6821450",
+    "edge-functions/supabase/functions/esg_search/index.ts": "430988f0a092733064a52e43703526ecfc9e3d133d6d96c60e228004e173902e",
+    "edge-functions/supabase/functions/standard_search/index.ts": "306d04eb5e67127cc7b3caa6ddabb69117c951250c05f9db21d1e8e95f05b178",
+    "edge-functions/supabase/functions/sci_search/index.ts": "76e4b7ac0ce922c06256895bc11db8270596d83c22277c9b832d4bcc8a45fde5",
+    "edge-functions/supabase/functions/course_search/index.ts": "65021d4db1f4e31c034f14159a22d83d0e70741c23932d730b95ffc85ee299cf",
+    "database/tests/consumers/edge_consumer.ts": "8834d9c31a391b549746c2d866a4095d2a55a36dc23f3e594f63c7f984b17d20",
+    "database/tests/consumers/external_mocks/providers.ts": "d4bf8b07314968befc4735d2ce9f41a827d7fc9ffeafb68793f60c25eccb84a3"
+  },
+  "qualification": [
+    {
+      "schema_version": 1,
+      "runtime": "Next exact Route Handlers + real HTTP/Auth/PostgREST",
+      "mode": "local",
+      "results": [
+        {
+          "consumer": "Next resources:education",
+          "passed": true,
+          "readonly_mutations_denied": true,
+          "post_status": 403,
+          "patch_status": 403,
+          "delete_status": 403,
+          "anonymous_mutations_status": 401,
+          "safe_errors": true,
+          "unchanged_rows": true
+        },
+        {
+          "consumer": "Next resources:esg",
+          "passed": true,
+          "readonly_mutations_denied": true,
+          "post_status": 403,
+          "patch_status": 403,
+          "delete_status": 403,
+          "anonymous_mutations_status": 401,
+          "safe_errors": true,
+          "unchanged_rows": true
+        },
+        {
+          "consumer": "Next resources:standards",
+          "passed": true,
+          "readonly_mutations_denied": true,
+          "post_status": 403,
+          "patch_status": 403,
+          "delete_status": 403,
+          "anonymous_mutations_status": 401,
+          "safe_errors": true,
+          "unchanged_rows": true
+        },
+        {
+          "consumer": "Next resources:reports",
+          "passed": true,
+          "readonly_mutations_denied": true,
+          "post_status": 403,
+          "patch_status": 403,
+          "delete_status": 403,
+          "anonymous_mutations_status": 401,
+          "safe_errors": true,
+          "unchanged_rows": true
+        },
+        {
+          "consumer": "Next resources:internalUse",
+          "passed": true,
+          "readonly_mutations_denied": true,
+          "post_status": 403,
+          "patch_status": 403,
+          "delete_status": 403,
+          "anonymous_mutations_status": 401,
+          "safe_errors": true,
+          "unchanged_rows": true
+        },
+        {
+          "consumer": "Next resources:greenDeal",
+          "passed": true,
+          "readonly_mutations_denied": true,
+          "post_status": 403,
+          "patch_status": 403,
+          "delete_status": 403,
+          "anonymous_mutations_status": 401,
+          "safe_errors": true,
+          "unchanged_rows": true
+        },
+        {
+          "consumer": "Next resources:thuHumanities",
+          "passed": true,
+          "admin_scoped_read": true,
+          "readonly_405": true
+        },
+        {
+          "consumer": "Next API-key lifecycle",
+          "passed": true
+        },
+        {
+          "consumer": "Next actual index and delete adapters",
+          "passed": true
+        },
+        {
+          "consumer": "Next full index/delete schedulers with real PostgREST and queue",
+          "passed": true,
+          "external_doubles": [
+            "artifact reader",
+            "index write/delete",
+            "external cleanup"
+          ]
+        },
+        {
+          "consumer": "Next Jobs",
+          "passed": true
+        },
+        {
+          "consumer": "Next resources:thuHumanities-outsider",
+          "passed": true,
+          "status": 403
+        }
+      ]
+    },
+    {
+      "schema_version": 1,
+      "runtime": "Deno exact Edge source + local HTTP; external SDK doubles only",
+      "mode": "local",
+      "results": [
+        {
+          "consumer": "course_search:real bearer RPC valid/invalid/revoked",
+          "passed": true,
+          "cache": "external double always misses"
+        },
+        {
+          "consumer": "course_search:S2 session RPC generated/rotated/revoked tokens",
+          "passed": true,
+          "cache": "external double always misses"
+        },
+        {
+          "consumer": "edu_search:list_filter_options",
+          "passed": true
+        },
+        {
+          "consumer": "edu_search:unauthorized",
+          "passed": true
+        },
+        {
+          "consumer": "esg_search",
+          "passed": true,
+          "real_database_metadata_filter": true
+        },
+        {
+          "consumer": "esg_search:metadata-no-match",
+          "passed": true
+        },
+        {
+          "consumer": "standard_search",
+          "passed": true,
+          "real_database_metadata_filter": true
+        },
+        {
+          "consumer": "standard_search:metadata-no-match",
+          "passed": true
+        },
+        {
+          "consumer": "sci_search:getMeta",
+          "passed": true,
+          "real_database_hydration": true
+        }
+      ]
+    }
+  ],
+  "hosted_edge_deployment": false
+}

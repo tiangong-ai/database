@@ -15,7 +15,7 @@ checkPaths:
   - tests/**
   - docs/**
 lastReviewedAt: 2026-10-18
-lastReviewedCommit: 59abb9666c37ef67096de45e0b8fd103b52c9f5c
+lastReviewedCommit: 13065cb238205b855155f2f906cc004d3211a386
 ---
 
 # Tiangong AI Database Contract

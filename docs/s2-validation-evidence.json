@@ -1,0 +1,18 @@
+{
+  "schema_version": 1,
+  "tested_database_commit": "13065cb238205b855155f2f906cc004d3211a386",
+  "migration_sha256": "f4bb9e8c9f6e513f347a5a580ef65765df08c5a824ea2e412b73e5cde68a6811",
+  "next_commit": "95a033e21c1cd3615bd133aac93c7e1eb0059e0c",
+  "edge_commit": "4ef643da900ab1faf5eaaaa9c27b27f0343a159a",
+  "local_only": true,
+  "production_operations": false,
+  "receipts": {
+    "database-13065cb.log": "425cf9a07d1d266344f6582df0492ecdc53d312b027a85497f6c31c784278968",
+    "offline-final.log": "a3df77391ee8dafed72294040fa96918dd51c96e047c8f51da473e0efb7d9270",
+    "consumer-offline.log": "b3610c30b2173eecfa785a692c42c9d3e75883cdcc37fd5b95299201298265e6",
+    "web-edge-exact.json": "5ad179c83a884296ca076a2b769c02f45fd8aebd8c41881be9e83dada7ace7a2",
+    "expiry-red.log": "bc8eda2920049b0d9a6e23923fcc9a5ac65fcc0de945e0fd3b6468dcf4d03210",
+    "expiry-green.log": "46751ba25e8e26d1a9697a0ea43efaf7fdddb86a45cb204bc866fd8670a94ebb",
+    "red.log": "f2a7b1e83007f7754bc19f67ae5dd67fa6ab56d2d78cfc9aaa819eb2e47e4b13"
+  }
+}
