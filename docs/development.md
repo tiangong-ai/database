@@ -9,7 +9,7 @@ whenToUse: "When exporting schema, authoring migrations or selecting a database 
 whenToUpdate: "When helper CLI contracts, dependencies or adoption steps change."
 checkPaths: [scripts/**, supabase/config.toml, .env.*.example]
 lastReviewedAt: 2026-10-15
-lastReviewedCommit: d07a7c4a1c98e63d0efd3f41b99bc40b5fe2baf9
+lastReviewedCommit: 33c3b417182b72349e36d0b6cf44a26e4be31c2c
 ---
 
 # Development
@@ -152,3 +152,18 @@ The resource API returns known business conflicts as HTTP 409 with `PT409` and
 a stable `RESOURCE_*` message. Apply bounded retry only to lifecycle-busy;
 revision/profile/source conflicts require reloading state. Private SQL callers
 still receive the original `40001` codes.
+
+
+S9 local permission qualification and role-specific recovery are defined in [legacy-permissions.md](legacy-permissions.md). No merge/deploy is authorized by local test success.
+
+
+For S9 role evidence, use the separate local LOGIN probe described in `tests/consumers/README.md`; it never accepts preview. Proposed production metadata reads are itemized in [the pending read packet](s9-role-consumer-evidence.md), and are not authorized or executed by local qualification.
+
+
+The complete S9 local orchestration runner uses the existing Unstructure Python
+environment (including requests, psycopg2 and boto3), without installing or
+upgrading dependencies or loading its `.env`. Constructed fixture configuration
+points only to the owned local database, temporary file tree and loopback
+provider listener. Local platform admin is used solely for temporary role
+lifecycle; worker connections assert NOSUPERUSER and their own BYPASSRLS flag.
+All production permissions and schemas remain unchanged.
