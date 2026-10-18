@@ -94,6 +94,15 @@ def cleanup(path):
         with psycopg2.connect(target['db_url'],connect_timeout=15) as conn:
             with conn.cursor() as cur:
                 cur.execute("set local statement_timeout='20s'")
+                # S2 private receipts are not accessible through service PostgREST.
+                # Only this run's synthetic Auth IDs may be cleaned via the owner connection.
+                cur.execute("select to_regclass('private.kb_api_key_requests') is not null")
+                if cur.fetchone()[0]:
+                    for actor in target.get('fixture_users',[]):
+                        cur.execute('delete from private.kb_api_key_requests where actor_id=%s',(actor,))
+                        cur.execute("delete from public.kb_audit_events where actor_id=%s and action like 'kb.api_key_%%_v1'",(actor,))
+                        cur.execute('select count(*) from private.kb_api_key_requests where actor_id=%s',(actor,))
+                        assert cur.fetchone()[0]==0
                 for table,key in [('kb_grants','thu_grant_id'),('kb_documents','thu_document_id'),('kb_collections','thu_collection_id'),('user_roles','user_role_id'),('journals','journal_id'),('edu_textbooks','textbook_id')]:
                     cur.execute(sql.SQL('delete from public.{} where id=%s').format(sql.Identifier(table)),(f.get(key),))
                     cur.execute(sql.SQL('select count(*) from public.{} where id=%s').format(sql.Identifier(table)),(f.get(key),));assert cur.fetchone()[0]==0

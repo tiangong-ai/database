@@ -67,6 +67,7 @@ class PriorCatalogTests(unittest.TestCase):
         resource = json.loads((SCHEMA / 'resource_catalog.expected.json').read_text())
         for kind in ('functions', 'relations'):
             current[kind] += resource[kind]
+            current[kind] += json.loads((SCHEMA / 'api_key_catalog.expected.json').read_text())[kind]
         code, report = self.qualify(current)
         self.assertEqual(code, 0, report)
         prior = json.loads((SCHEMA / 'pre_resource_catalog.expected.json').read_text())

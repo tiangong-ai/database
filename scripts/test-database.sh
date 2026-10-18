@@ -153,6 +153,7 @@ run_sql < "$repo_root/tests/schema/resource_http_errors.sql"
 SUPABASE_CLI="$supabase_bin" "$python_bin" "$repo_root/tests/runtime/resource_api.py" "$db_container" "$test_root"
 run_sql < "$repo_root/tests/runtime/legacy_permissions.sql"
 SUPABASE_CLI="$supabase_bin" "$python_bin" "$repo_root/tests/runtime/legacy_permissions_api.py" "$db_container" "$test_root"
+SUPABASE_CLI="$supabase_bin" "$python_bin" "$repo_root/tests/runtime/api_key_management.py" "$db_container" "$test_root"
 for sql_file in "$repo_root"/tests/performance/*.sql; do
   [[ -f "$sql_file" ]] || continue
   echo "Running ${sql_file##*/}"
@@ -192,7 +193,14 @@ done
 local_cli migration up --local --workdir "$test_root"
 run_sql < "$repo_root/tests/upgrade/resource_boundary_before.sql"
 mv "$test_root"/schema-boundary-tail/*.sql "$test_root/supabase/migrations/"
+# Populate the exact pre-S2/S9 schema before introducing the additive key gateway.
+api_key_migration=20261018095025_kb_api_key_management.sql
+mv "$test_root/supabase/migrations/$api_key_migration" "$test_root/$api_key_migration"
 local_cli migration up --local --workdir "$test_root"
+run_sql < "$repo_root/tests/upgrade/api_key_before.sql"
+mv "$test_root/$api_key_migration" "$test_root/supabase/migrations/$api_key_migration"
+local_cli migration up --local --workdir "$test_root"
+run_sql < "$repo_root/tests/upgrade/api_key_after.sql"
 run_sql < "$repo_root/tests/upgrade/resource_boundary_after.sql"
 run_sql < "$repo_root/tests/upgrade/resource_after.sql"
 run_sql -At < "$repo_root/tests/schema/public_catalog.sql" > "$test_root/upgraded-catalog.json"
@@ -204,4 +212,5 @@ run_sql < "$repo_root/tests/schema/resource_http_errors.sql"
 SUPABASE_CLI="$supabase_bin" "$python_bin" "$repo_root/tests/runtime/resource_api.py" "$db_container" "$test_root"
 run_sql < "$repo_root/tests/runtime/legacy_permissions.sql"
 SUPABASE_CLI="$supabase_bin" "$python_bin" "$repo_root/tests/runtime/legacy_permissions_api.py" "$db_container" "$test_root"
+SUPABASE_CLI="$supabase_bin" "$python_bin" "$repo_root/tests/runtime/api_key_management.py" "$db_container" "$test_root"
 echo "Local migration replay, ${#smoke_tests[@]} SQL smoke tests, resource concurrency, PostgREST boundary and populated prior-schema upgrade passed."

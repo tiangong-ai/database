@@ -1,7 +1,7 @@
 version: 1
 layout: repo
-lastReviewedAt: "2026-10-15"
-lastReviewedCommit: "697163cba2e52fe0416e37341cd5b532f104b383"
+lastReviewedAt: "2026-10-18"
+lastReviewedCommit: "59abb9666c37ef67096de45e0b8fd103b52c9f5c"
 repo:
   id: database
 routing:
@@ -192,3 +192,20 @@ rules:
       - path: docs/s9-development-validation.md
         mode: review_or_update
     reason: Legacy grants, worker identity, compatibility and release gates must remain explicit.
+
+  - id: database-api-key-management
+    scope: repo
+    repo: database
+    triggers:
+      - path: supabase/migrations/*_kb_api_key_management.sql
+        kind: key-gateway
+      - path: tests/runtime/api_key_*
+        kind: key-runtime
+      - path: tests/upgrade/api_key_*
+        kind: key-upgrade
+      - path: tests/schema/api_key_catalog.expected.json
+        kind: key-catalog
+    requiredDocs:
+      - path: docs/api-key-management.md
+        mode: review_or_update
+    reason: Key identity, atomic rotation, secret-once replay and consumer compatibility must have one contract.
