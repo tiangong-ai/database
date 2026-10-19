@@ -8,7 +8,7 @@ language: en
 whenToUse: "When deciding source ownership, schema scope or generated-path boundaries."
 whenToUpdate: "When schema ownership, imported scope or consumer contracts change."
 checkPaths: [supabase/**, scripts/**, tests/sql/**, docs/source-inventory.json]
-lastReviewedAt: 2026-10-18
+lastReviewedAt: 2026-10-19
 lastReviewedCommit: 59abb9666c37ef67096de45e0b8fd103b52c9f5c
 ---
 
@@ -123,3 +123,9 @@ RPCs and a private receipt ledger. Caller identity comes from Auth claims;
 legacy public key storage and service verifiers are unchanged. The api schema
 has authenticated USAGE, while each function retains explicit EXECUTE grants;
 M1 resource RPCs remain service-role-only.
+
+
+Six-resource metadata writes use the additive [metadata management contract](metadata-management.md).
+Private per-resource editor grants and receipts back three authenticated API RPCs;
+no legacy table, grant, production user or worker is changed. The local full gate
+checks all six real-session CRUD paths and populated upgrade preservation.

@@ -1,0 +1,397 @@
+{
+  "relations": [
+    {
+      "acl": [
+        {
+          "grantee": "postgres",
+          "grantable": false,
+          "privilege": "DELETE"
+        },
+        {
+          "grantee": "postgres",
+          "grantable": false,
+          "privilege": "INSERT"
+        },
+        {
+          "grantee": "postgres",
+          "grantable": false,
+          "privilege": "MAINTAIN"
+        },
+        {
+          "grantee": "postgres",
+          "grantable": false,
+          "privilege": "REFERENCES"
+        },
+        {
+          "grantee": "postgres",
+          "grantable": false,
+          "privilege": "SELECT"
+        },
+        {
+          "grantee": "postgres",
+          "grantable": false,
+          "privilege": "TRIGGER"
+        },
+        {
+          "grantee": "postgres",
+          "grantable": false,
+          "privilege": "TRUNCATE"
+        },
+        {
+          "grantee": "postgres",
+          "grantable": false,
+          "privilege": "UPDATE"
+        }
+      ],
+      "rls": true,
+      "kind": "r",
+      "name": "private.kb_metadata_editors",
+      "owner": "postgres",
+      "columns": [
+        {
+          "name": "actor_id",
+          "type": "uuid",
+          "default": null,
+          "identity": "",
+          "not_null": true,
+          "generated": ""
+        },
+        {
+          "name": "resource",
+          "type": "text",
+          "default": null,
+          "identity": "",
+          "not_null": true,
+          "generated": ""
+        },
+        {
+          "name": "granted_by",
+          "type": "uuid",
+          "default": null,
+          "identity": "",
+          "not_null": true,
+          "generated": ""
+        },
+        {
+          "name": "granted_at",
+          "type": "timestamp with time zone",
+          "default": "now()",
+          "identity": "",
+          "not_null": true,
+          "generated": ""
+        },
+        {
+          "name": "expires_at",
+          "type": "timestamp with time zone",
+          "default": null,
+          "identity": "",
+          "not_null": false,
+          "generated": ""
+        },
+        {
+          "name": "revoked_at",
+          "type": "timestamp with time zone",
+          "default": null,
+          "identity": "",
+          "not_null": false,
+          "generated": ""
+        }
+      ],
+      "indexes": [
+        {
+          "name": "kb_metadata_editors_pkey",
+          "definition": "CREATE UNIQUE INDEX kb_metadata_editors_pkey ON private.kb_metadata_editors USING btree (actor_id, resource)"
+        }
+      ],
+      "policies": [],
+      "triggers": [],
+      "force_rls": false,
+      "constraints": [
+        {
+          "name": "kb_metadata_editors_actor_id_fkey",
+          "type": "f",
+          "validated": true,
+          "definition": "FOREIGN KEY (actor_id) REFERENCES auth.users(id) ON DELETE CASCADE"
+        },
+        {
+          "name": "kb_metadata_editors_pkey",
+          "type": "p",
+          "validated": true,
+          "definition": "PRIMARY KEY (actor_id, resource)"
+        },
+        {
+          "name": "kb_metadata_editors_resource_check",
+          "type": "c",
+          "validated": true,
+          "definition": "CHECK (resource = ANY (ARRAY['education'::text, 'esg'::text, 'standards'::text, 'reports'::text, 'internalUse'::text, 'greenDeal'::text]))"
+        }
+      ]
+    },
+    {
+      "acl": [
+        {
+          "grantee": "postgres",
+          "grantable": false,
+          "privilege": "DELETE"
+        },
+        {
+          "grantee": "postgres",
+          "grantable": false,
+          "privilege": "INSERT"
+        },
+        {
+          "grantee": "postgres",
+          "grantable": false,
+          "privilege": "MAINTAIN"
+        },
+        {
+          "grantee": "postgres",
+          "grantable": false,
+          "privilege": "REFERENCES"
+        },
+        {
+          "grantee": "postgres",
+          "grantable": false,
+          "privilege": "SELECT"
+        },
+        {
+          "grantee": "postgres",
+          "grantable": false,
+          "privilege": "TRIGGER"
+        },
+        {
+          "grantee": "postgres",
+          "grantable": false,
+          "privilege": "TRUNCATE"
+        },
+        {
+          "grantee": "postgres",
+          "grantable": false,
+          "privilege": "UPDATE"
+        }
+      ],
+      "rls": true,
+      "kind": "r",
+      "name": "private.kb_metadata_requests",
+      "owner": "postgres",
+      "columns": [
+        {
+          "name": "actor_id",
+          "type": "uuid",
+          "default": null,
+          "identity": "",
+          "not_null": true,
+          "generated": ""
+        },
+        {
+          "name": "request_id",
+          "type": "uuid",
+          "default": null,
+          "identity": "",
+          "not_null": true,
+          "generated": ""
+        },
+        {
+          "name": "payload_hash",
+          "type": "text",
+          "default": null,
+          "identity": "",
+          "not_null": true,
+          "generated": ""
+        },
+        {
+          "name": "receipt",
+          "type": "jsonb",
+          "default": null,
+          "identity": "",
+          "not_null": true,
+          "generated": ""
+        },
+        {
+          "name": "created_at",
+          "type": "timestamp with time zone",
+          "default": "now()",
+          "identity": "",
+          "not_null": true,
+          "generated": ""
+        }
+      ],
+      "indexes": [
+        {
+          "name": "kb_metadata_requests_pkey",
+          "definition": "CREATE UNIQUE INDEX kb_metadata_requests_pkey ON private.kb_metadata_requests USING btree (actor_id, request_id)"
+        }
+      ],
+      "policies": [],
+      "triggers": [],
+      "force_rls": false,
+      "constraints": [
+        {
+          "name": "kb_metadata_requests_payload_hash_check",
+          "type": "c",
+          "validated": true,
+          "definition": "CHECK (payload_hash ~ '^[0-9a-f]{64}$'::text)"
+        },
+        {
+          "name": "kb_metadata_requests_pkey",
+          "type": "p",
+          "validated": true,
+          "definition": "PRIMARY KEY (actor_id, request_id)"
+        },
+        {
+          "name": "kb_metadata_requests_receipt_check",
+          "type": "c",
+          "validated": true,
+          "definition": "CHECK (jsonb_typeof(receipt) = 'object'::text)"
+        }
+      ]
+    }
+  ],
+  "functions": [
+    {
+      "acl": [
+        {
+          "grantee": "postgres",
+          "grantable": false,
+          "privilege": "EXECUTE"
+        }
+      ],
+      "cost": 100,
+      "name": "private.kb_metadata_actor_v1",
+      "rows": 0,
+      "owner": "postgres",
+      "strict": false,
+      "returns": "uuid",
+      "body_md5": "90df4b6e5dd581176bb6ddc7b921aa76",
+      "language": "plpgsql",
+      "parallel": "u",
+      "arguments": "",
+      "leakproof": false,
+      "volatility": "s",
+      "configuration": [
+        "search_path=pg_catalog"
+      ],
+      "full_arguments": "",
+      "security_definer": false
+    },
+    {
+      "acl": [
+        {
+          "grantee": "authenticated",
+          "grantable": false,
+          "privilege": "EXECUTE"
+        },
+        {
+          "grantee": "postgres",
+          "grantable": false,
+          "privilege": "EXECUTE"
+        }
+      ],
+      "cost": 100,
+      "name": "api.kb_metadata_command_v1",
+      "rows": 0,
+      "owner": "postgres",
+      "strict": false,
+      "returns": "jsonb",
+      "body_md5": "b5abe07570b7af0b1f310dac326d6344",
+      "language": "plpgsql",
+      "parallel": "u",
+      "arguments": "p_resource text, p_operation text, p_request_id uuid, p_payload jsonb, p_record_id uuid, p_expected_version text",
+      "leakproof": false,
+      "volatility": "v",
+      "configuration": [
+        "search_path=pg_catalog"
+      ],
+      "full_arguments": "p_resource text, p_operation text, p_request_id uuid, p_payload jsonb DEFAULT '{}'::jsonb, p_record_id uuid DEFAULT NULL::uuid, p_expected_version text DEFAULT NULL::text",
+      "security_definer": true
+    },
+    {
+      "acl": [
+        {
+          "grantee": "authenticated",
+          "grantable": false,
+          "privilege": "EXECUTE"
+        },
+        {
+          "grantee": "postgres",
+          "grantable": false,
+          "privilege": "EXECUTE"
+        }
+      ],
+      "cost": 100,
+      "name": "api.kb_metadata_context_v1",
+      "rows": 0,
+      "owner": "postgres",
+      "strict": false,
+      "returns": "jsonb",
+      "body_md5": "9cf87827dd461fcc2294b2758ff60abc",
+      "language": "plpgsql",
+      "parallel": "u",
+      "arguments": "p_resource text, p_ids uuid[]",
+      "leakproof": false,
+      "volatility": "s",
+      "configuration": [
+        "search_path=pg_catalog"
+      ],
+      "full_arguments": "p_resource text, p_ids uuid[] DEFAULT '{}'::uuid[]",
+      "security_definer": true
+    },
+    {
+      "acl": [
+        {
+          "grantee": "postgres",
+          "grantable": false,
+          "privilege": "EXECUTE"
+        }
+      ],
+      "cost": 100,
+      "name": "private.kb_metadata_definition_v1",
+      "rows": 0,
+      "owner": "postgres",
+      "strict": false,
+      "returns": "jsonb",
+      "body_md5": "60f77bd3f31ad5be5ca23c5f51e05e37",
+      "language": "plpgsql",
+      "parallel": "u",
+      "arguments": "p_resource text",
+      "leakproof": false,
+      "volatility": "i",
+      "configuration": [
+        "search_path=pg_catalog"
+      ],
+      "full_arguments": "p_resource text",
+      "security_definer": false
+    },
+    {
+      "acl": [
+        {
+          "grantee": "authenticated",
+          "grantable": false,
+          "privilege": "EXECUTE"
+        },
+        {
+          "grantee": "postgres",
+          "grantable": false,
+          "privilege": "EXECUTE"
+        }
+      ],
+      "cost": 100,
+      "name": "api.kb_metadata_list_v1",
+      "rows": 0,
+      "owner": "postgres",
+      "strict": false,
+      "returns": "jsonb",
+      "body_md5": "80245b2d7ef992b345333cf9e13d97f1",
+      "language": "plpgsql",
+      "parallel": "u",
+      "arguments": "p_resource text, p_query jsonb",
+      "leakproof": false,
+      "volatility": "s",
+      "configuration": [
+        "search_path=pg_catalog"
+      ],
+      "full_arguments": "p_resource text, p_query jsonb DEFAULT '{}'::jsonb",
+      "security_definer": true
+    }
+  ]
+}

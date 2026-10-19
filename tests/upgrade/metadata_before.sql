@@ -1,0 +1,13 @@
+create schema metadata_upgrade_test;
+insert into public.edu_meta(id,name) values('ada10000-0000-4000-8000-000000000001','Metadata upgrade preserved');
+create table metadata_upgrade_test.edu_meta as select to_jsonb(t) as row from public.edu_meta t where id='ada10000-0000-4000-8000-000000000001';
+insert into public.esg_meta(id,report_title) values('ada10000-0000-4000-8000-000000000001','Metadata upgrade preserved');
+create table metadata_upgrade_test.esg_meta as select to_jsonb(t) as row from public.esg_meta t where id='ada10000-0000-4000-8000-000000000001';
+insert into public.standards(id,title) values('ada10000-0000-4000-8000-000000000001','Metadata upgrade preserved');
+create table metadata_upgrade_test.standards as select to_jsonb(t) as row from public.standards t where id='ada10000-0000-4000-8000-000000000001';
+insert into public.reports(id,title) values('ada10000-0000-4000-8000-000000000001','Metadata upgrade preserved');
+create table metadata_upgrade_test.reports as select to_jsonb(t) as row from public.reports t where id='ada10000-0000-4000-8000-000000000001';
+insert into public.internal_use(id,title) values('ada10000-0000-4000-8000-000000000001','Metadata upgrade preserved');
+create table metadata_upgrade_test.internal_use as select to_jsonb(t) as row from public.internal_use t where id='ada10000-0000-4000-8000-000000000001';
+insert into public.green_deal_meta(id,title) values('ada10000-0000-4000-8000-000000000001','Metadata upgrade preserved');
+create table metadata_upgrade_test.green_deal_meta as select to_jsonb(t) as row from public.green_deal_meta t where id='ada10000-0000-4000-8000-000000000001';
