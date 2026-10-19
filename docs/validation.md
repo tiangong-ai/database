@@ -8,8 +8,8 @@ language: en
 whenToUse: "Before submitting or integrating database changes."
 whenToUpdate: "When test commands, qualification scope or CI changes."
 checkPaths: [scripts/**, tests/**, .github/workflows/**, .docpact/**]
-lastReviewedAt: 2026-10-19
-lastReviewedCommit: 59abb9666c37ef67096de45e0b8fd103b52c9f5c
+lastReviewedAt: 2026-10-20
+lastReviewedCommit: cf137cb8a8b8105192b54cdfbe44ee96d7aede5c
 ---
 
 # Validation
@@ -193,3 +193,16 @@ null clearing, no rows/audits/receipts on rejection, receipt replay after countr
 reference removal, and audit FK errors retaining 500/atomic rollback semantics.
 The upgrade gate keeps all metadata-tail migrations after S2 and verifies a
 populated initial-gateway upgrade preserves identities, grants, audit and receipts.
+
+### Catalogue qualification
+
+`tests/runtime/catalogue_read.py` uses owned local Auth/PostgREST sessions to
+qualify seven categories, ordinary RLS versus explicit policy editor access,
+collection isolation, three-source explicit-link deduplication, deterministic
+pages, count/filter parity, unknown versus missing file state, status transitions,
+input bounds, anonymous/service-role denial and immediate grant revocation.
+`catalogue_boundary.sql` pins ownership, search paths, function execution and
+absence of private schema USAGE. The additive catalogue fixture pins seven new
+functions without replacing existing objects. `scripts/test-database.sh` runs
+the HTTP checks on clean replay and upgrade, alongside the existing resource,
+metadata, key and worker permission suites. No hosted credentials are needed.

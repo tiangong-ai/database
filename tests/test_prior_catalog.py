@@ -69,6 +69,7 @@ class PriorCatalogTests(unittest.TestCase):
             current[kind] += resource[kind]
             current[kind] += json.loads((SCHEMA / 'api_key_catalog.expected.json').read_text())[kind]
             current[kind] += json.loads((SCHEMA / 'metadata_catalog.expected.json').read_text())[kind]
+            current[kind] += json.loads((SCHEMA / 'catalogue_catalog.expected.json').read_text())[kind]
         code, report = self.qualify(current)
         self.assertEqual(code, 0, report)
         prior = json.loads((SCHEMA / 'pre_resource_catalog.expected.json').read_text())

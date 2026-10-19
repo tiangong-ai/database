@@ -8,8 +8,8 @@ language: en
 whenToUse: "When deciding source ownership, schema scope or generated-path boundaries."
 whenToUpdate: "When schema ownership, imported scope or consumer contracts change."
 checkPaths: [supabase/**, scripts/**, tests/sql/**, docs/source-inventory.json]
-lastReviewedAt: 2026-10-19
-lastReviewedCommit: 1120852ffd64000fa356356cab7b5f62ae262f74
+lastReviewedAt: 2026-10-20
+lastReviewedCommit: cf137cb8a8b8105192b54cdfbe44ee96d7aede5c
 ---
 
 # Database architecture
@@ -129,3 +129,47 @@ Six-resource metadata writes use the additive [metadata management contract](met
 Private per-resource editor grants and receipts back three authenticated API RPCs;
 no legacy table, grant, production user or worker is changed. The local full gate
 checks all six real-session CRUD paths and populated upgrade preservation.
+
+## Authorized catalogue (database #23 / Next #108)
+
+`api.kb_catalogue_v1(jsonb)` is a read-only ordinary-user session API. Its
+SQL-standard invoker body preserves legacy table RLS. Bound helper OIDs allow
+execution without granting `private` schema USAGE. Three narrowly scoped
+private definer helpers validate the actual authenticated Auth identity, read
+registered materials/documents with collection/document ACLs, and retain the
+existing explicit Green Deal editor read grant. There is no service-role fallback,
+caller-supplied actor, table move, identifier change, file scan or queue write.
+
+The display category is independent from collection identity and authorization.
+`kb_collections.metadata_schema_json.catalogue_category` may explicitly select
+journals/esg/standards/reports/education/policies/other. Absent a valid category,
+registered entries use the exact legacy table mapping; unmatched collections and
+internal-use metadata remain `other`. Next renders all categories with one page.
+
+The catalogue projects journals plus the six existing editable metadata sources,
+registered materials and non-deleted documents. Only explicit `legacy_ref` and
+active document links consolidate records. Potential unlinked duplicates remain
+separate, so `total` means visible catalogue records, not a proven global count
+of unique intellectual works. Collection filtering does not invent membership
+for legacy rows. Required metadata completeness, candidate/file registration,
+review and processing states remain independent. A missing accessible document
+has unknown processing state. File associations do not attest current NAS
+availability. Ready requires completed document status and both recorded index
+flags; no external index is queried. Unregistered NAS files are excluded.
+
+Queries whitelist category, state, literal substring search (up to 200 chars),
+collection, typed detail key, page and page_size (1..50). Detail, list and metric
+filters share the same permission-filtered snapshot. Pages sort by update time
+and key; totals cover the filtered set rather than the current page. Invalid
+queries fail, and unavailable results must never be presented as zeros.
+
+This aggregate performs exact scans across authorized source records. Production
+capacity/latency validation is a release prerequisite, not established by small
+synthetic fixtures. Future summaries or materialized views must preserve this
+same actor scope and count contract.
+
+A document-only reader does not inherit access to its parent collection: the
+projection masks collection ID/name and uses `other` unless collection read is
+granted. An active accessible document counts as registered file evidence even
+when the material candidate map is empty. Multiple independently registered
+entries in different collections remain separate catalogue records.

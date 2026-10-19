@@ -8,8 +8,8 @@ language: en
 whenToUse: "When implementing, reviewing or adopting the S2 API-key management gateway."
 whenToUpdate: "When S2 identity, permissions, idempotency, compatibility or release gates change."
 checkPaths: [supabase/migrations/*_kb_api_key_management.sql, tests/runtime/api_key_*, tests/upgrade/api_key_*, tests/schema/api_key_catalog.expected.json]
-lastReviewedAt: 2026-10-19
-lastReviewedCommit: 59abb9666c37ef67096de45e0b8fd103b52c9f5c
+lastReviewedAt: 2026-10-20
+lastReviewedCommit: cf137cb8a8b8105192b54cdfbe44ee96d7aede5c
 ---
 
 # S2 API-key management v1
@@ -227,3 +227,6 @@ objects only after consumer retirement and explicit receipt-retention approval.
 The separate six-resource metadata gateway (database #20) adds three authenticated
 RPCs with private per-type grants; existing S2 contracts, legacy tables and ACLs
 remain unchanged. See [metadata management](metadata-management.md).
+
+The catalogue read API added by database #23 is included in the global API
+allowlist test; it does not change the four S2 functions or their permissions.

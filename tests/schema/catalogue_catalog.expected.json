@@ -1,0 +1,222 @@
+{
+  "relations": [],
+  "functions": [
+    {
+      "acl": [
+        {
+          "grantee": "authenticated",
+          "grantable": false,
+          "privilege": "EXECUTE"
+        },
+        {
+          "grantee": "postgres",
+          "grantable": false,
+          "privilege": "EXECUTE"
+        }
+      ],
+      "cost": 100,
+      "name": "private.kb_catalogue_category_v1",
+      "rows": 0,
+      "owner": "postgres",
+      "strict": false,
+      "returns": "text",
+      "body_md5": "d41d8cd98f00b204e9800998ecf8427e",
+      "language": "sql",
+      "parallel": "u",
+      "arguments": "p_category text, p_table text",
+      "leakproof": false,
+      "volatility": "i",
+      "configuration": [
+        "search_path=pg_catalog"
+      ],
+      "full_arguments": "p_category text, p_table text",
+      "security_definer": false
+    },
+    {
+      "acl": [
+        {
+          "grantee": "authenticated",
+          "grantable": false,
+          "privilege": "EXECUTE"
+        },
+        {
+          "grantee": "postgres",
+          "grantable": false,
+          "privilege": "EXECUTE"
+        }
+      ],
+      "cost": 100,
+      "name": "private.kb_catalogue_policy_editors_v1",
+      "rows": 1000,
+      "owner": "postgres",
+      "strict": false,
+      "returns": "SETOF green_deal_meta",
+      "body_md5": "c3cb7d4d69335d30bc0093305f84c778",
+      "language": "plpgsql",
+      "parallel": "u",
+      "arguments": "",
+      "leakproof": false,
+      "volatility": "s",
+      "configuration": [
+        "search_path=pg_catalog"
+      ],
+      "full_arguments": "",
+      "security_definer": true
+    },
+    {
+      "acl": [
+        {
+          "grantee": "authenticated",
+          "grantable": false,
+          "privilege": "EXECUTE"
+        },
+        {
+          "grantee": "postgres",
+          "grantable": false,
+          "privilege": "EXECUTE"
+        }
+      ],
+      "cost": 100,
+      "name": "private.kb_catalogue_query_v1",
+      "rows": 0,
+      "owner": "postgres",
+      "strict": false,
+      "returns": "jsonb",
+      "body_md5": "5a93cc0fe07ddc1cb194c9299b68d31a",
+      "language": "plpgsql",
+      "parallel": "u",
+      "arguments": "p_query jsonb",
+      "leakproof": false,
+      "volatility": "s",
+      "configuration": [
+        "search_path=pg_catalog"
+      ],
+      "full_arguments": "p_query jsonb",
+      "security_definer": true
+    },
+    {
+      "acl": [
+        {
+          "grantee": "authenticated",
+          "grantable": false,
+          "privilege": "EXECUTE"
+        },
+        {
+          "grantee": "postgres",
+          "grantable": false,
+          "privilege": "EXECUTE"
+        }
+      ],
+      "cost": 100,
+      "name": "private.kb_catalogue_registered_v1",
+      "rows": 1000,
+      "owner": "postgres",
+      "strict": false,
+      "returns": "SETOF jsonb",
+      "body_md5": "035b00100fe48e203ba6cc6a7f53a07d",
+      "language": "plpgsql",
+      "parallel": "u",
+      "arguments": "",
+      "leakproof": false,
+      "volatility": "s",
+      "configuration": [
+        "search_path=pg_catalog"
+      ],
+      "full_arguments": "",
+      "security_definer": true
+    },
+    {
+      "acl": [
+        {
+          "grantee": "authenticated",
+          "grantable": false,
+          "privilege": "EXECUTE"
+        },
+        {
+          "grantee": "postgres",
+          "grantable": false,
+          "privilege": "EXECUTE"
+        }
+      ],
+      "cost": 100,
+      "name": "private.kb_catalogue_row_v1",
+      "rows": 0,
+      "owner": "postgres",
+      "strict": false,
+      "returns": "jsonb",
+      "body_md5": "d41d8cd98f00b204e9800998ecf8427e",
+      "language": "sql",
+      "parallel": "u",
+      "arguments": "p_kind text, p_id uuid, p_category text, p_title text, p_metadata jsonb, p_updated timestamp with time zone, p_extra jsonb",
+      "leakproof": false,
+      "volatility": "i",
+      "configuration": [
+        "search_path=pg_catalog"
+      ],
+      "full_arguments": "p_kind text, p_id uuid, p_category text, p_title text, p_metadata jsonb, p_updated timestamp with time zone, p_extra jsonb DEFAULT '{}'::jsonb",
+      "security_definer": false
+    },
+    {
+      "acl": [
+        {
+          "grantee": "authenticated",
+          "grantable": false,
+          "privilege": "EXECUTE"
+        },
+        {
+          "grantee": "postgres",
+          "grantable": false,
+          "privilege": "EXECUTE"
+        }
+      ],
+      "cost": 100,
+      "name": "private.kb_catalogue_rows_v1",
+      "rows": 1000,
+      "owner": "postgres",
+      "strict": false,
+      "returns": "SETOF jsonb",
+      "body_md5": "d41d8cd98f00b204e9800998ecf8427e",
+      "language": "sql",
+      "parallel": "u",
+      "arguments": "",
+      "leakproof": false,
+      "volatility": "s",
+      "configuration": [
+        "search_path=pg_catalog"
+      ],
+      "full_arguments": "",
+      "security_definer": false
+    },
+    {
+      "acl": [
+        {
+          "grantee": "authenticated",
+          "grantable": false,
+          "privilege": "EXECUTE"
+        },
+        {
+          "grantee": "postgres",
+          "grantable": false,
+          "privilege": "EXECUTE"
+        }
+      ],
+      "cost": 100,
+      "name": "api.kb_catalogue_v1",
+      "rows": 0,
+      "owner": "postgres",
+      "strict": false,
+      "returns": "jsonb",
+      "body_md5": "d41d8cd98f00b204e9800998ecf8427e",
+      "language": "sql",
+      "parallel": "u",
+      "arguments": "p_query jsonb",
+      "leakproof": false,
+      "volatility": "s",
+      "configuration": [
+        "search_path=pg_catalog"
+      ],
+      "full_arguments": "p_query jsonb DEFAULT '{}'::jsonb",
+      "security_definer": false
+    }
+  ]
+}
