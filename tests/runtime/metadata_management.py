@@ -122,6 +122,41 @@ try:
     checks.append('six resources CRUD, ordinary Auth, explicit grants, forbidden roles/claims/cross-resource, base DML, strict fields, versions and replay')
     for resource,payload in [('education',{'name':marker,'chapter_number':-1}),('education',{'name':marker,'chapter_number':1.5}),('education',{'name':marker,'course':'x'*256}),('reports',{'title':marker,'release_date':'infinity'}),('reports',{'title':marker,'release_date':'2026-99-99'}),('reports',{'title':marker,'language':'bogus'}),('reports',{'title':marker,'issuing_organization':123})]:
         expect(command(resource,payload=payload),400,'typed field validation')
+    # Known ESG business FK is invalid input, not an unknown committed outcome.
+    country='ZZ'
+    assert sql("select count(*) from public.esg_country where code='ZZ';")=='0'
+    bad_id=uid()
+    expect(command('esg',payload={'report_title':marker,'country':country},rid=bad_id),400,'invalid country create')
+    assert sql(f"select count(*) from public.esg_meta where report_title='{marker}';")=='0'
+    assert sql(f"select count(*) from private.kb_metadata_requests where actor_id='{owner}' and request_id='{bad_id}';")=='0'
+    assert sql(f"select count(*) from public.kb_audit_events where actor_id='{owner}' and request_id='{bad_id}';")=='0'
+    sql("insert into public.esg_country(code) values('ZZ');")
+    try:
+        created=expect(command('esg',payload={'report_title':marker,'country':country},rid=bad_id),200,'retry after country correction')
+        esg_row=created['id'];rows.append(('esg_meta',esg_row))
+        before=snapshot('esg',esg_row);bad_update=uid()
+        expect(command('esg','update',{'country':'invalid-country'},esg_row,before['version'],rid=bad_update),400,'invalid country update')
+        assert snapshot('esg',esg_row)==before
+        assert sql(f"select count(*) from private.kb_metadata_requests where actor_id='{owner}' and request_id='{bad_update}';")=='0'
+        assert sql(f"select count(*) from public.kb_audit_events where actor_id='{owner}' and request_id='{bad_update}';")=='0'
+        valid_update=expect(command('esg','update',{'country':country},esg_row,before['version']),200,'valid country update')
+        cleared=expect(command('esg','update',{'country':None},esg_row,valid_update['recordVersion']),200,'clear optional country')
+        assert snapshot('esg',esg_row)['values']['country'] is None
+        sql("delete from public.esg_country where code='ZZ';")
+        replay=expect(command('esg',payload={'report_title':marker,'country':country},rid=bad_id),200,'receipt before mutable reference lookup')
+        assert replay['id']==esg_row and replay['replayed']
+        # Even a diagnostic with the same constraint name in the audit phase is internal.
+        sql("create function public.metadata_test_fk() returns trigger language plpgsql as $$ begin raise foreign_key_violation using schema='public',table='esg_meta',constraint='fk_country'; end $$; create trigger metadata_test_fk before insert on public.kb_audit_events for each row execute function public.metadata_test_fk();")
+        failed=uid();before=snapshot('esg',esg_row)
+        try:
+            expect(command('esg','update',{'report_title':marker+' audit'},esg_row,cleared['recordVersion'],rid=failed),500,'audit FK remains internal')
+            assert snapshot('esg',esg_row)==before
+            assert sql(f"select count(*) from private.kb_metadata_requests where actor_id='{owner}' and request_id='{failed}';")=='0'
+        finally:sql('drop trigger metadata_test_fk on public.kb_audit_events; drop function public.metadata_test_fk();')
+        expect(command('esg','update',{'report_title':marker+' audit'},esg_row,cleared['recordVersion'],rid=failed),200,'audit FK retry')
+    finally:
+        sql("delete from public.esg_country where code='ZZ';")
+    checks.append('ESG country create/update errors, null, exact retry, replay after reference removal, audit FK isolation')
     for query in ({'sort':'title; drop table public.reports'}, {'pageSize':101}, {'page':0}, {'dir':'bad'}, {'q':{}}, {'page':1.5}, {'x':'bad'}, {'sort':None}):
         expect(rpc('kb_metadata_list_v1',{'p_resource':'reports','p_query':query},editor),400,'list input validation')
     valid=expect(command('reports',payload={'title':marker,'release_date':'2026-10-19','issuing_organization':[{'name':'example'}],'language':'eng'}),200,'typed valid')

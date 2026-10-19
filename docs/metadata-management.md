@@ -81,6 +81,13 @@ nor platform, NAS or index privileges. Existing read RLS is unchanged.
   Conflict messages are stable METADATA_* codes. Only busy/unknown outcomes can
   retry unchanged; stale versions require reload and human reconciliation.
 
+The country correction migration maps only `public.esg_meta.fk_country` failures
+inside the business DML block to PT400. Internal/audit/receipt constraint failures
+remain PT500 and roll back atomically. Country references are not prevalidated
+before receipt lookup: a committed request can still replay if the reference
+catalog later changes. Null clears the optional country. Neither record UUIDs
+nor PDF/NAS references are rewritten by this correction.
+
 The grant row is share-locked through the mutation, serializing revocation.
 Request advisory locks serialize actor+request; a reused ID with different input
 fails. A replay rechecks current authorization and returns the original receipt,

@@ -187,3 +187,9 @@ Six-resource metadata writes use the additive [metadata management contract](met
 Private per-resource editor grants and receipts back three authenticated API RPCs;
 no legacy table, grant, production user or worker is changed. The local full gate
 checks all six real-session CRUD paths and populated upgrade preservation.
+
+Metadata correction regressions cover invalid/valid ESG country create/update,
+null clearing, no rows/audits/receipts on rejection, receipt replay after country
+reference removal, and audit FK errors retaining 500/atomic rollback semantics.
+The upgrade gate keeps all metadata-tail migrations after S2 and verifies a
+populated initial-gateway upgrade preserves identities, grants, audit and receipts.

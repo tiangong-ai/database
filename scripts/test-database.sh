@@ -196,7 +196,12 @@ run_sql < "$repo_root/tests/upgrade/resource_boundary_before.sql"
 mv "$test_root"/schema-boundary-tail/*.sql "$test_root/supabase/migrations/"
 # Populate the exact pre-S2/S9 schema before introducing the additive key gateway.
 metadata_migration=20261019035114_kb_metadata_management.sql
-mv "$test_root/supabase/migrations/$metadata_migration" "$test_root/$metadata_migration"
+mkdir "$test_root/metadata-tail"
+for migration_path in "$test_root"/supabase/migrations/*.sql; do
+  if [[ ! "${migration_path##*/}" < "$metadata_migration" ]]; then
+    mv "$migration_path" "$test_root/metadata-tail/"
+  fi
+done
 api_key_migration=20261018095025_kb_api_key_management.sql
 mv "$test_root/supabase/migrations/$api_key_migration" "$test_root/$api_key_migration"
 local_cli migration up --local --workdir "$test_root"
@@ -205,8 +210,12 @@ mv "$test_root/$api_key_migration" "$test_root/supabase/migrations/$api_key_migr
 local_cli migration up --local --workdir "$test_root"
 run_sql < "$repo_root/tests/upgrade/api_key_after.sql"
 run_sql < "$repo_root/tests/upgrade/metadata_before.sql"
-mv "$test_root/$metadata_migration" "$test_root/supabase/migrations/$metadata_migration"
+mv "$test_root/metadata-tail/$metadata_migration" "$test_root/supabase/migrations/"
 local_cli migration up --local --workdir "$test_root"
+run_sql < "$repo_root/tests/upgrade/metadata_repair_before.sql"
+mv "$test_root"/metadata-tail/*.sql "$test_root/supabase/migrations/"
+local_cli migration up --local --workdir "$test_root"
+run_sql < "$repo_root/tests/upgrade/metadata_repair_after.sql"
 run_sql < "$repo_root/tests/upgrade/metadata_after.sql"
 run_sql < "$repo_root/tests/runtime/metadata_boundary.sql"
 run_sql < "$repo_root/tests/upgrade/resource_boundary_after.sql"
