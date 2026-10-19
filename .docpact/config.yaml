@@ -1,7 +1,7 @@
 version: 1
 layout: repo
-lastReviewedAt: "2026-10-18"
-lastReviewedCommit: "13065cb238205b855155f2f906cc004d3211a386"
+lastReviewedAt: "2026-10-19"
+lastReviewedCommit: "1120852ffd64000fa356356cab7b5f62ae262f74"
 repo:
   id: database
 routing:
@@ -209,3 +209,20 @@ rules:
       - path: docs/api-key-management.md
         mode: review_or_update
     reason: Key identity, atomic rotation, secret-once replay and consumer compatibility must have one contract.
+
+  - id: database-metadata-management
+    scope: repo
+    repo: database
+    triggers:
+      - path: supabase/migrations/*_kb_metadata_management.sql
+        kind: metadata-gateway
+      - path: tests/runtime/metadata_*
+        kind: metadata-runtime
+      - path: tests/upgrade/metadata_*
+        kind: metadata-upgrade
+      - path: tests/schema/metadata_catalog.expected.json
+        kind: metadata-catalog
+    requiredDocs:
+      - path: docs/metadata-management.md
+        mode: review_or_update
+    reason: Six-resource writes require explicit identity, retry and lifecycle contracts.

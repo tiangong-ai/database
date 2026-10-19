@@ -14,8 +14,8 @@ checkPaths:
   - scripts/**
   - tests/**
   - docs/**
-lastReviewedAt: 2026-10-18
-lastReviewedCommit: 13065cb238205b855155f2f906cc004d3211a386
+lastReviewedAt: 2026-10-19
+lastReviewedCommit: 1120852ffd64000fa356356cab7b5f62ae262f74
 ---
 
 # Tiangong AI Database Contract
@@ -80,3 +80,5 @@ retain explicit consumer-role evidence and keep release authorization separate.
 
 S9 role/consumer evidence and proposed read-only target scopes are maintained in
 `docs/s9-role-consumer-evidence.md`; synthetic roles never establish deployed identities.
+
+Six-resource metadata development follows `docs/metadata-management.md`; no production user grants are seeded.

@@ -8,8 +8,8 @@ language: en
 whenToUse: "When reviewing the production-derived legacy baseline or running consumer qualification."
 whenToUpdate: "When capture scope, privacy guarantees, parity or business-path validation changes."
 checkPaths: [supabase/migrations/**, tests/schema/**, tests/consumers/**, docs/legacy-schema-inventory.json]
-lastReviewedAt: 2026-10-18
-lastReviewedCommit: 59abb9666c37ef67096de45e0b8fd103b52c9f5c
+lastReviewedAt: 2026-10-19
+lastReviewedCommit: 1120852ffd64000fa356356cab7b5f62ae262f74
 ---
 
 # Knowledge Base legacy schema baseline
@@ -173,3 +173,8 @@ S2 adds the [API-key gateway](api-key-management.md) and a separate additive
 catalog fixture. All legacy public objects and M1 objects retain their exact
 catalog expectations; no baseline regeneration accepts this addition. Only
 authenticated schema USAGE and four new function grants expand the API surface.
+
+
+The separate six-resource metadata gateway (database #20) adds three authenticated
+RPCs with private per-type grants; existing S2 contracts, legacy tables and ACLs
+remain unchanged. See [metadata management](metadata-management.md).

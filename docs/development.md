@@ -8,8 +8,8 @@ language: en
 whenToUse: "When exporting schema, authoring migrations or selecting a database target."
 whenToUpdate: "When helper CLI contracts, dependencies or adoption steps change."
 checkPaths: [scripts/**, supabase/config.toml, .env.*.example]
-lastReviewedAt: 2026-10-18
-lastReviewedCommit: 59abb9666c37ef67096de45e0b8fd103b52c9f5c
+lastReviewedAt: 2026-10-19
+lastReviewedCommit: 1120852ffd64000fa356356cab7b5f62ae262f74
 ---
 
 # Development
@@ -176,3 +176,9 @@ Auth/PostgREST plus SQL failure/lock barriers; it refuses hosted targets. Run
 these mutation/failure-injection scenarios sequentially with other consumers
 on the same disposable stack. The full database gate invokes it on fresh and
 populated upgraded stacks. No production environment file is used.
+
+
+Six-resource metadata writes use the additive [metadata management contract](metadata-management.md).
+Private per-resource editor grants and receipts back three authenticated API RPCs;
+no legacy table, grant, production user or worker is changed. The local full gate
+checks all six real-session CRUD paths and populated upgrade preservation.

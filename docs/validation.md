@@ -8,7 +8,7 @@ language: en
 whenToUse: "Before submitting or integrating database changes."
 whenToUpdate: "When test commands, qualification scope or CI changes."
 checkPaths: [scripts/**, tests/**, .github/workflows/**, .docpact/**]
-lastReviewedAt: 2026-10-18
+lastReviewedAt: 2026-10-19
 lastReviewedCommit: 59abb9666c37ef67096de45e0b8fd103b52c9f5c
 ---
 
@@ -181,3 +181,15 @@ The local HTTP test injects INSERT/audit failures, verifies aborted-request retr
 and observes both rotation requests blocked by the same row-lock dependency
 chain before releasing the barrier. Real Next/Edge compatibility remains a
 separate sequential consumer run, not a substitute for v1 session tests.
+
+
+Six-resource metadata writes use the additive [metadata management contract](metadata-management.md).
+Private per-resource editor grants and receipts back three authenticated API RPCs;
+no legacy table, grant, production user or worker is changed. The local full gate
+checks all six real-session CRUD paths and populated upgrade preservation.
+
+Metadata correction regressions cover invalid/valid ESG country create/update,
+null clearing, no rows/audits/receipts on rejection, receipt replay after country
+reference removal, and audit FK errors retaining 500/atomic rollback semantics.
+The upgrade gate keeps all metadata-tail migrations after S2 and verifies a
+populated initial-gateway upgrade preserves identities, grants, audit and receipts.

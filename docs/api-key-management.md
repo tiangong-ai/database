@@ -8,7 +8,7 @@ language: en
 whenToUse: "When implementing, reviewing or adopting the S2 API-key management gateway."
 whenToUpdate: "When S2 identity, permissions, idempotency, compatibility or release gates change."
 checkPaths: [supabase/migrations/*_kb_api_key_management.sql, tests/runtime/api_key_*, tests/upgrade/api_key_*, tests/schema/api_key_catalog.expected.json]
-lastReviewedAt: 2026-10-18
+lastReviewedAt: 2026-10-19
 lastReviewedCommit: 59abb9666c37ef67096de45e0b8fd103b52c9f5c
 ---
 
@@ -222,3 +222,8 @@ all key rows, revocations, audits and receipts. Do not resurrect revoked secrets
 drop the public key table, or restore pre-S9 broad grants. Remove additive
 objects only after consumer retirement and explicit receipt-retention approval.
 142/148 and production workers are outside this development task.
+
+
+The separate six-resource metadata gateway (database #20) adds three authenticated
+RPCs with private per-type grants; existing S2 contracts, legacy tables and ACLs
+remain unchanged. See [metadata management](metadata-management.md).
