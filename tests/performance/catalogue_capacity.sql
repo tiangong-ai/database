@@ -69,7 +69,7 @@ do $$ declare result jsonb; begin
  assert result->'groups'='[{"category":"journals","total":1500000,"associated":1000,"ready":0},{"category":"other","total":49100,"associated":49100,"ready":0}]'::jsonb, 'Category counts';
  assert result->'metrics'='{"associated":50100,"ready":0,"missing":0,"unknown":1499000}'::jsonb, 'Unknown is not missing';
  assert jsonb_array_length(result->'rows')=20, 'Bounded hydrated page';
- assert length(result->'rows'->0->'metadata'->>'description')=1890, 'Selected registered metadata hydrated';
+ assert result->'rows'->0->'metadata'->>'description'=repeat('synthetic document metadata ',70), 'Selected registered metadata hydrated';
 end $$;
 do $$ declare before_scan bigint; before_fetch bigint; before_index bigint; result jsonb; begin
  select seq_tup_read,idx_tup_fetch,idx_scan into before_scan,before_fetch,before_index from pg_stat_xact_user_tables where relid='public.journals'::regclass;

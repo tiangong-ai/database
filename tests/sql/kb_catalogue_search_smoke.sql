@@ -11,7 +11,7 @@ reset role;
 select set_config('request.jwt.claims',jsonb_build_object('sub',md5('catalogue-search-actor')::uuid,'role','authenticated')::text,true);
 set local role authenticated;
 do $$ declare needle text; expected uuid[]; actual uuid[]; result jsonb; begin
- foreach needle in array array['Quoted','quoted','ALICE','测试','%','_','\','"',E'\n','10.000','2026-10','abstract','"title":','null','a','zz','LongAbstractOnly Needle'] loop
+ foreach needle in array array['Quoted','quoted','100%_ok','100X_ok','100%Xok','\\ Path','ALICE','测试','%','_','\','"',E'\n','10.000','2026-10','abstract','"title":','null','a','zz','LongAbstractOnly Needle'] loop
   select coalesce(array_agg(id order by id),'{}'::uuid[]) into expected from public.journals t
    where strpos(lower(jsonb_build_object('title',t.title,'doi',t.doi,'journal',t.journal,'authors',t.authors,'date',t.date,'abstract',t.abstract)::text||' '||coalesce(t.title,'')),lower(needle))>0;
   result:=api.kb_catalogue_v1(jsonb_build_object('category','journals','q',needle,'page_size',50));

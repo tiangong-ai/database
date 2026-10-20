@@ -138,6 +138,9 @@ try:
     expect(rpc('kb_catalogue_v1',{},service),403,'service role denied')
     assert sql("select has_schema_privilege('authenticated','private','usage');")=='f'
     expect(request('/rest/v1/kb_resource_entries',token=sessions[0],schema='private'),406,'private not exposed')
+    expect(rpc('kb_catalogue_journal_matches_v1',{'p_search':marker},sessions[0],schema='private'),406,'private candidate helper not exposed')
+    expect(rpc('kb_catalogue_journal_matches_v1',{'p_search':marker},sessions[0],schema='api'),404,'no public candidate adapter')
+    expect(request('/rest/v1/kb_catalogue_journal_search',token=sessions[0],schema='private'),406,'private search projection not exposed')
     sql(f"delete from public.kb_grants where resource_id='{cid}'; delete from private.kb_metadata_editors where actor_id='{actor}';")
     # Owner may still see document; entry requires a collection grant.
     assert catalogue({'key':'material:'+eid})['total']==0
