@@ -212,12 +212,13 @@ metadata, key and worker permission suites. No hosted credentials are needed.
 `tests/performance/catalogue_capacity.sql` seeds 500,000 synthetic journal rows
 with 1,900-byte abstracts in a rollback-only transaction. It checks real ordinary
 session counts, bounded hydration, deep pages and substring search under an
-8-second statement timeout. Transaction table statistics prove unrelated-category
+8-second statement timeout with forced generic plans. Search and next/deep pages
+assert exact result identities/counts as well as elapsed-time bounds. Transaction table statistics prove unrelated-category
 pruning and primary-key detail access; a fast empty result alone is insufficient.
 
 The catalog collector hashes `pg_get_functiondef` for SQL-standard bodies, whose
 `prosrc` is empty; older string bodies retain their historical `prosrc` hashes.
-`tests/schema/sql_body_fingerprint.py` changes each of the four original
+`tests/schema/sql_body_fingerprint.py` changes each of the five
 SQL-standard catalogue bodies in a rolled-back local transaction and requires
 exactly a body fingerprint difference. This gate runs after catalog parity, and
 the final read verifies that all mutations were rolled back.
