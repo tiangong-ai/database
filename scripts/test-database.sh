@@ -155,6 +155,7 @@ run_sql < "$repo_root/tests/runtime/legacy_permissions.sql"
 SUPABASE_CLI="$supabase_bin" "$python_bin" "$repo_root/tests/runtime/legacy_permissions_api.py" "$db_container" "$test_root"
 SUPABASE_CLI="$supabase_bin" "$python_bin" "$repo_root/tests/runtime/api_key_management.py" "$db_container" "$test_root"
 SUPABASE_CLI="$supabase_bin" "$python_bin" "$repo_root/tests/runtime/metadata_management.py" "$db_container" "$test_root"
+SUPABASE_CLI="$supabase_bin" "$python_bin" "$repo_root/tests/runtime/catalogue_read.py" "$db_container" "$test_root"
 for sql_file in "$repo_root"/tests/performance/*.sql; do
   [[ -f "$sql_file" ]] || continue
   echo "Running ${sql_file##*/}"
@@ -167,6 +168,7 @@ if [[ -n "${DATABASE_TEST_CATALOG_OUTPUT:-}" ]]; then
   cp "$test_root/legacy-catalog.json" "$DATABASE_TEST_CATALOG_OUTPUT"
 fi
 "$python_bin" "$repo_root/tests/schema/check_catalog.py" --actual "$test_root/legacy-catalog.json"
+"$python_bin" "$repo_root/tests/schema/sql_body_fingerprint.py" "$db_container"
 
 SUPABASE_CLI="$supabase_bin" "$python_bin" "$repo_root/tests/runtime/qualify_toolchain.py" "$repo_root" "$test_root"
 # Upgrade from the exact prior chain with existing rows; never apply to a linked project.
@@ -231,4 +233,5 @@ run_sql < "$repo_root/tests/runtime/legacy_permissions.sql"
 SUPABASE_CLI="$supabase_bin" "$python_bin" "$repo_root/tests/runtime/legacy_permissions_api.py" "$db_container" "$test_root"
 SUPABASE_CLI="$supabase_bin" "$python_bin" "$repo_root/tests/runtime/api_key_management.py" "$db_container" "$test_root"
 SUPABASE_CLI="$supabase_bin" "$python_bin" "$repo_root/tests/runtime/metadata_management.py" "$db_container" "$test_root"
+SUPABASE_CLI="$supabase_bin" "$python_bin" "$repo_root/tests/runtime/catalogue_read.py" "$db_container" "$test_root"
 echo "Local migration replay, ${#smoke_tests[@]} SQL smoke tests, resource concurrency, PostgREST boundary and populated prior-schema upgrade passed."

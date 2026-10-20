@@ -8,8 +8,8 @@ language: en
 whenToUse: "When reviewing the production-derived legacy baseline or running consumer qualification."
 whenToUpdate: "When capture scope, privacy guarantees, parity or business-path validation changes."
 checkPaths: [supabase/migrations/**, tests/schema/**, tests/consumers/**, docs/legacy-schema-inventory.json]
-lastReviewedAt: 2026-10-19
-lastReviewedCommit: 1120852ffd64000fa356356cab7b5f62ae262f74
+lastReviewedAt: 2026-10-20
+lastReviewedCommit: cf137cb8a8b8105192b54cdfbe44ee96d7aede5c
 ---
 
 # Knowledge Base legacy schema baseline

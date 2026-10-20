@@ -8,8 +8,8 @@ language: en
 whenToUse: "When exporting schema, authoring migrations or selecting a database target."
 whenToUpdate: "When helper CLI contracts, dependencies or adoption steps change."
 checkPaths: [scripts/**, supabase/config.toml, .env.*.example]
-lastReviewedAt: 2026-10-19
-lastReviewedCommit: 1120852ffd64000fa356356cab7b5f62ae262f74
+lastReviewedAt: 2026-10-20
+lastReviewedCommit: cf137cb8a8b8105192b54cdfbe44ee96d7aede5c
 ---
 
 # Development
@@ -182,3 +182,14 @@ Six-resource metadata writes use the additive [metadata management contract](met
 Private per-resource editor grants and receipts back three authenticated API RPCs;
 no legacy table, grant, production user or worker is changed. The local full gate
 checks all six real-session CRUD paths and populated upgrade preservation.
+
+### Catalogue pairing and recovery
+
+Database #23 supplies the read API needed by Next #108. Develop and qualify this
+pair on a disposable local stack. The first batch does not authorize deployment,
+production category configuration, migrations, account changes or worker startup.
+On a later authorized release, qualify the additive database version before Next
+activation; preserve the prior app image. An app rollback may leave the additive
+read functions installed. Do not remove them while any client uses them. A future
+removal migration must drop the API and dependent invoker helpers in dependency
+order after rollback verification, never mutate published migration history.
