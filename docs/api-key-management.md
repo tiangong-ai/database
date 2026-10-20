@@ -230,3 +230,7 @@ remain unchanged. See [metadata management](metadata-management.md).
 
 The catalogue read API added by database #23 is included in the global API
 allowlist test; it does not change the four S2 functions or their permissions.
+
+Catalogue identifier RPC exposure (database #27) is explicitly allowlisted by the
+S2 boundary regression. It does not change the four key-management RPCs, grants,
+receipts, verifier behavior or public key storage.

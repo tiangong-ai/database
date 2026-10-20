@@ -65,6 +65,8 @@ cid,did,eid,hidden_cid,hidden_doc=[uid() for _ in range(5)]
 def catalogue(query=None,session=None):
     return expect(rpc('kb_catalogue_v1',{'p_query':query or {}},session or sessions[0]),200,'catalogue')
 try:
+    # This runner owns a disposable local stack; isolate catalogue fixtures from prior gates.
+    sql('truncate public.journals,public.edu_meta,public.esg_meta,public.standards,public.reports,public.internal_use,public.green_deal_meta,private.kb_resource_entries,public.kb_documents cascade;')
     sessions=[]
     for _ in range(2):
         email=marker+'-'+uid()+'@example.test'; password=uid()+uid()
@@ -78,16 +80,16 @@ try:
         value=",'10.000/"+row+"'" if table=='journals' else ''
         sql(f"insert into public.{table}(id,{field}{extra}) values('{row}','{marker} {table}'{value});")
     sql(f"insert into private.kb_metadata_editors(actor_id,resource,granted_by) values('{actor}','greenDeal','{actor}');")
-    rows=catalogue({'q':marker,'page_size':50})
+    rows=catalogue({'page_size':50})
     assert rows['total']==7 and len(rows['groups'])==7, 'all source categories'
     assert rows['metrics']=={'associated':0,'ready':0,'missing':0,'unknown':7}, 'unknown is not missing'
-    assert catalogue({'q':marker},sessions[1])['total']==6, 'Green Deal editor read stays explicit'
+    assert catalogue({},sessions[1])['total']==6, 'Green Deal editor read stays explicit'
     for table,(_,category) in resources.items():
-        assert catalogue({'q':marker,'category':category})['total']==1
-    a=catalogue({'q':marker,'page_size':2}); b=catalogue({'q':marker,'page_size':2,'page':2})
+        assert catalogue({'category':category})['total']==1
+    a=catalogue({'page_size':2}); b=catalogue({'page_size':2,'page':2})
     assert a['total']==b['total']==7 and len(a['rows'])==len(b['rows'])==2
     assert not ({x['key'] for x in a['rows']}&{x['key'] for x in b['rows']}), 'stable server pages'
-    assert catalogue({'q':marker,'page':100})['rows']==[]
+    assert catalogue({'page':100})['rows']==[]
     journal=records[0][1]
     sql(f"""insert into public.kb_collections(id,name,path,metadata_schema_json) values
       ('{cid}','{marker}','/{marker}','{{"catalogue_category":"journals"}}'),
@@ -101,39 +103,50 @@ try:
       ('{hidden_doc}','{hidden_cid}','{hidden_cid}','{marker} hidden.pdf','b','failed','{other}','{other}',false,false);
       insert into private.kb_resource_document_links(entry_id,document_id,content_revision,active,publish_state,approved_revision,candidate_json,metadata_snapshot,effective_metadata_revision)
       values('{eid}','{did}',1,true,'published',1,'{{}}','{{}}',1);""")
-    result=catalogue({'q':marker,'page_size':50})
+    result=catalogue({'page_size':50})
     assert result['total']==7 and result['metrics']['ready']==1 and result['metrics']['associated']==1, 'explicit links dedupe three projections'
     assert not any(x['id'] in (journal,did,hidden_doc) for x in result['rows'])
     linked=catalogue({'key':'material:'+eid})['rows'][0]
     assert linked['document_id']==did and linked['metadata_state']=='complete'
     assert catalogue({'key':'material:'+eid},sessions[1])['total']==0
     assert catalogue({'collection':cid})['total']==1
-    assert catalogue({'q':marker+' journals'})['total']==0, 'filtered-out registered row still suppresses its source'
     assert catalogue({'key':'journals:'+journal})['total']==0, 'source detail stays suppressed'
     sql(f"update public.kb_collections set metadata_schema_json='{{\"catalogue_category\":\"reports\"}}' where id='{cid}';")
-    assert catalogue({'category':'journals','q':marker})['total']==0, 'category filter cannot resurrect a suppressed source'
+    assert catalogue({'category':'journals'})['total']==0, 'category filter cannot resurrect a suppressed source'
     assert catalogue({'category':'reports','key':'material:'+eid})['total']==1
     sql(f"update public.kb_collections set metadata_schema_json='{{\"catalogue_category\":\"journals\"}}' where id='{cid}';")
-    assert catalogue({'state':'ready','q':marker})['total']==1
-    assert catalogue({'state':'associated','q':marker})['total']==1
-    assert catalogue({'state':'missing','q':marker})['total']==0
-    assert catalogue({'state':'review','q':marker})['total']==1
+    assert catalogue({'state':'ready'})['total']==1
+    assert catalogue({'state':'associated'})['total']==1
+    assert catalogue({'state':'missing'})['total']==0
+    assert catalogue({'state':'review'})['total']==1
     sql(f"update public.kb_documents set status='failed' where id='{did}'; update private.kb_resource_entries set candidates='{{}}',source_metadata='{{"""+'"title":null'+f"""}}' where id='{eid}';""")
     assert catalogue({'state':'failed','collection':cid})['total']==1
     assert catalogue({'state':'pending','collection':cid})['total']==1
     assert catalogue({'state':'missing','collection':cid})['total']==0, 'active document remains a file registration'
     sql(f"update private.kb_resource_document_links set active=false,publish_state='superseded' where entry_id='{eid}';")
     assert catalogue({'state':'missing','collection':cid})['total']==1
-    assert catalogue({'state':'unknown','q':marker})['total']==6
-    assert catalogue({'state':'ready','q':marker})['total']==0
+    assert catalogue({'state':'unknown'})['total']==6
+    assert catalogue({'state':'ready'})['total']==0
     sql(f"insert into public.kb_grants(resource_type,resource_id,principal_type,principal_id,actions,created_by) values('document','{hidden_doc}','user','{actor}',array['read']::public.kb_grant_action[],'{actor}');")
     hidden=catalogue({'key':'document:'+hidden_doc})['rows'][0]
     assert hidden['collection_id'] is None and hidden['collection_name'] is None and hidden['category']=='other', 'document access does not expose hidden collection'
     assert catalogue({'collection':hidden_cid})['total']==0
     sql(f"delete from public.kb_grants where resource_id='{hidden_doc}';")
     checks.append('seven types; Green Deal explicit read grant; cross-collection isolation; explicit-link dedupe; stable pages and count parity; independent metadata/file/processing states')
+    for term in ('a','synthetic abstract','%','测试',' '):
+        denied=expect(rpc('kb_catalogue_v1',{'p_query':{'q':term}},sessions[0]),400,'unsupported search')
+        assert denied['code']=='22023' and denied['message']=='CATALOGUE_SEARCH_UNSUPPORTED'
     for query in ({'page_size':51},{'page':0},{'page':1.2},{'page':10**20},{'category':'invented'},{'state':'invented'},{'q':'x'*201},{'key':'invalid'},{'key':'journals:'+'-'*36},{'collection':'invalid'},{'actor_id':actor},[],None):
         expect(rpc('kb_catalogue_v1',{'p_query':query},sessions[0]),400,'invalid query')
+    lookup={'category':'journals','identifier':'https://doi.org/10.000/'+journal.upper()}
+    found=expect(rpc('kb_catalogue_identifier_v1',{'p_query':lookup},sessions[0]),200,'identifier ordinary session')
+    assert found['total']==1 and found['rows'][0]['id']==eid, 'Canonical material via source DOI'
+    found=expect(rpc('kb_catalogue_identifier_v1',{'p_query':lookup},sessions[1]),200,'identifier other session')
+    assert found['total']==1 and found['rows'][0]['id']==journal, 'Inaccessible material does not suppress source'
+    expect(rpc('kb_catalogue_identifier_v1',{'p_query':lookup},anon),401,'identifier anonymous denied')
+    expect(rpc('kb_catalogue_identifier_v1',{'p_query':lookup},service),403,'identifier service denied')
+    expect(rpc('kb_catalogue_identifier_v1',{'p_query':{'category':'all','identifier':'a'}},sessions[0]),400,'identifier current-library bound')
+    checks.append('identifier exact source match and canonical material; ordinary sessions; anon/service denial')
     expect(rpc('kb_catalogue_v1',{},anon),401,'anonymous denied')
     expect(rpc('kb_catalogue_v1',{},service),403,'service role denied')
     assert sql("select has_schema_privilege('authenticated','private','usage');")=='f'
@@ -141,7 +154,7 @@ try:
     sql(f"delete from public.kb_grants where resource_id='{cid}'; delete from private.kb_metadata_editors where actor_id='{actor}';")
     # Owner may still see document; entry requires a collection grant.
     assert catalogue({'key':'material:'+eid})['total']==0
-    assert catalogue({'category':'policies','q':marker})['total']==0
+    assert catalogue({'category':'policies'})['total']==0
     checks.append('ordinary HTTP sessions; invalid query bounds; anon/service denial; private schema unexposed; immediate grant revocation')
 finally:
     sql(f"delete from private.kb_resource_document_links where entry_id='{eid}'; delete from private.kb_resource_entries where id='{eid}'; delete from public.kb_documents where id in ('{did}','{hidden_doc}'); delete from public.kb_grants where resource_id in ('{cid}','{hidden_cid}','{hidden_doc}'); delete from public.kb_collections where id in ('{cid}','{hidden_cid}');")

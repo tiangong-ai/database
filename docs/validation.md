@@ -9,7 +9,7 @@ whenToUse: "Before submitting or integrating database changes."
 whenToUpdate: "When test commands, qualification scope or CI changes."
 checkPaths: [scripts/**, tests/**, .github/workflows/**, .docpact/**]
 lastReviewedAt: 2026-10-20
-lastReviewedCommit: cf137cb8a8b8105192b54cdfbe44ee96d7aede5c
+lastReviewedCommit: 767623f9f3d894dfe9180cdc082235d57f9a3063
 ---
 
 # Validation
@@ -202,23 +202,45 @@ collection isolation, three-source explicit-link deduplication, deterministic
 pages, count/filter parity, unknown versus missing file state, status transitions,
 input bounds, anonymous/service-role denial and immediate grant revocation.
 `catalogue_boundary.sql` pins ownership, search paths, function execution and
-absence of private schema USAGE. The additive catalogue fixture pins seven new
+absence of private schema USAGE. The additive catalogue fixture pins ten catalogue
 functions without replacing existing objects. `scripts/test-database.sh` runs
 the HTTP checks on clean replay and upgrade, alongside the existing resource,
 metadata, key and worker permission suites. No hosted credentials are needed.
 
 ## Catalogue capacity and body integrity
 
-`tests/performance/catalogue_capacity.sql` seeds 500,000 synthetic journal rows
-with 1,900-byte abstracts in a rollback-only transaction. It checks real ordinary
-session counts, bounded hydration, deep pages and substring search under an
-8-second statement timeout with forced generic plans. Search and next/deep pages
-assert exact result identities/counts as well as elapsed-time bounds. Transaction table statistics prove unrelated-category
-pruning and primary-key detail access; a fast empty result alone is insufficient.
+`tests/performance/catalogue_capacity.sql` retains 1,500,000 synthetic journals
+with wide abstracts, 60,000 registered documents and 1,000 explicit links in a
+rollback-only transaction. Mixed collection/group/subtree/direct authorization
+leaves 9,900 denied documents. Overview, category, exact/missing detail, next/deep
+pages and ten reused generic prepared calls keep the 8-second statement timeout.
+Exact identities, counts, groups, states and source pruning are asserted.
+Next/deep-page RPC results are captured in separate 8-second statements before
+the independent reference scans and identity assertions, which have a bounded
+30-second oracle budget. Reference-query work must not consume the product
+request budget; no RPC executes under the oracle timeout.
+Unsupported nonempty `q` is rejected without scanning journals, not treated as
+an empty query. No search replicas or trigger-disabled bulk-load shortcuts remain.
 
-The catalog collector hashes `pg_get_functiondef` for SQL-standard bodies, whose
-`prosrc` is empty; older string bodies retain their historical `prosrc` hashes.
-`tests/schema/sql_body_fingerprint.py` changes each of the five
-SQL-standard catalogue bodies in a rolled-back local transaction and requires
-exactly a body fingerprint difference. This gate runs after catalog parity, and
-the final read verifies that all mutations were rolled back.
+`kb_catalogue_permissions_smoke.sql` compares batch ACL/masking with unchanged
+canonical helpers and textual key ordering. `kb_catalogue_browse_smoke.sql`
+retains partial restrictive source RLS before counting/paging and direct-detail
+denial, plus assertions that abandoned search relations/triggers are absent.
+The HTTP catalogue runner uses only the owned disposable local database and
+isolates its synthetic catalogue rows from previous gates; it checks ordinary
+sessions, input/error boundaries and permission revocation on replay and upgrade.
+
+`sql_body_fingerprint.py` mutates five SQL-standard functions in rolled-back
+transactions and checks exact body-hash changes. Catalog-only fixtures pin final
+function attributes/ACLs and the explicitly added DOI index; existing public objects and Edge indexes remain intact. Old search-only regression
+and memory/space experiments remain historical evidence, not current acceptance.
+A fresh official Preview and exact-head CI are still required before release.
+
+Identifier qualification adds `kb_catalogue_identifier_smoke.sql`: normalization
+parity, duplicate candidates, punctuation preservation, visible canonical links,
+hidden-source RLS, hidden-material non-suppression, state filters, invalid input,
+source update and service-writer index maintenance. The ordinary Auth/PostgREST
+runner exercises the new RPC with two actors and anon/service denial. Capacity
+checks retain the browse assertions, then add 50k standards and exact/absent DOI
+lookups, no journal sequential scan, three reused generic identifier calls and
+the added btree size/build time. No production credentials or rows are used.

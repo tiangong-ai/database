@@ -113,7 +113,7 @@
       "owner": "postgres",
       "strict": false,
       "returns": "jsonb",
-      "body_md5": "8990ecb1baca5f862334bb572c52c73b",
+      "body_md5": "d02265fcb7a97590215089fc99f23d36",
       "language": "plpgsql",
       "parallel": "u",
       "arguments": "p_query jsonb",
@@ -144,7 +144,7 @@
       "owner": "postgres",
       "strict": false,
       "returns": "SETOF jsonb",
-      "body_md5": "035b00100fe48e203ba6cc6a7f53a07d",
+      "body_md5": "358fd864e713d49359d4423683407444",
       "language": "plpgsql",
       "parallel": "u",
       "arguments": "",
@@ -237,7 +237,7 @@
       "owner": "postgres",
       "strict": false,
       "returns": "jsonb",
-      "body_md5": "ddff48c0c50802a12342fa7c2fd208a1",
+      "body_md5": "46f871f38e986b7af940f6cd6fb01e8c",
       "language": "sql",
       "parallel": "u",
       "arguments": "p_query jsonb",
@@ -248,6 +248,68 @@
       ],
       "full_arguments": "p_query jsonb DEFAULT '{}'::jsonb",
       "security_definer": false
+    },
+    {
+      "acl": [
+        {
+          "grantee": "authenticated",
+          "grantable": false,
+          "privilege": "EXECUTE"
+        },
+        {
+          "grantee": "postgres",
+          "grantable": false,
+          "privilege": "EXECUTE"
+        }
+      ],
+      "cost": 100,
+      "name": "api.kb_catalogue_identifier_v1",
+      "rows": 0,
+      "owner": "postgres",
+      "strict": false,
+      "returns": "jsonb",
+      "body_md5": "b7f820f3a3de8735418795f1fca6b919",
+      "language": "sql",
+      "parallel": "u",
+      "arguments": "p_query jsonb",
+      "leakproof": false,
+      "volatility": "s",
+      "configuration": [
+        "search_path=pg_catalog"
+      ],
+      "full_arguments": "p_query jsonb",
+      "security_definer": false
+    },
+    {
+      "acl": [
+        {
+          "grantee": "authenticated",
+          "grantable": false,
+          "privilege": "EXECUTE"
+        },
+        {
+          "grantee": "postgres",
+          "grantable": false,
+          "privilege": "EXECUTE"
+        }
+      ],
+      "cost": 100,
+      "name": "private.kb_catalogue_identifier_query_v1",
+      "rows": 0,
+      "owner": "postgres",
+      "strict": false,
+      "returns": "jsonb",
+      "body_md5": "87bf99464159100548d1daf57450c383",
+      "language": "plpgsql",
+      "parallel": "u",
+      "arguments": "p_query jsonb",
+      "leakproof": false,
+      "volatility": "s",
+      "configuration": [
+        "search_path=pg_catalog"
+      ],
+      "full_arguments": "p_query jsonb",
+      "security_definer": true
     }
   ]
 }

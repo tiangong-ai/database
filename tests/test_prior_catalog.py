@@ -41,7 +41,7 @@ class PriorCatalogTests(unittest.TestCase):
                 self.assertEqual(difference['fields'], ['body_md5'])
             else:
                 self.assertIn(name, expected_acl)
-                self.assertEqual(difference['fields'], ['acl'])
+                self.assertEqual(difference['fields'], ['acl', 'indexes'] if name == 'journals' else ['acl'])
                 expected_acl.remove(name)
         self.assertFalse(expected_acl)
 

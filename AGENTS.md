@@ -15,7 +15,7 @@ checkPaths:
   - tests/**
   - docs/**
 lastReviewedAt: 2026-10-20
-lastReviewedCommit: cf137cb8a8b8105192b54cdfbe44ee96d7aede5c
+lastReviewedCommit: 767623f9f3d894dfe9180cdc082235d57f9a3063
 ---
 
 # Tiangong AI Database Contract
@@ -82,3 +82,7 @@ S9 role/consumer evidence and proposed read-only target scopes are maintained in
 `docs/s9-role-consumer-evidence.md`; synthetic roles never establish deployed identities.
 
 Six-resource metadata development follows `docs/metadata-management.md`; no production user grants are seeded.
+
+Catalogue capacity changes follow `docs/catalogue-capacity.md`: qualify mixed
+production-scale synthetic browsing, authorization and explicit associations before
+release; enhanced catalogue search is deferred and no search replica is required.

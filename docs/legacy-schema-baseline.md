@@ -9,7 +9,7 @@ whenToUse: "When reviewing the production-derived legacy baseline or running con
 whenToUpdate: "When capture scope, privacy guarantees, parity or business-path validation changes."
 checkPaths: [supabase/migrations/**, tests/schema/**, tests/consumers/**, docs/legacy-schema-inventory.json]
 lastReviewedAt: 2026-10-20
-lastReviewedCommit: cf137cb8a8b8105192b54cdfbe44ee96d7aede5c
+lastReviewedCommit: 5cff89c50baf6d97cd2e31011889387dfc54e05a
 ---
 
 # Knowledge Base legacy schema baseline
@@ -178,3 +178,14 @@ authenticated schema USAGE and four new function grants expand the API surface.
 The separate six-resource metadata gateway (database #20) adds three authenticated
 RPCs with private per-type grants; existing S2 contracts, legacy tables and ACLs
 remain unchanged. See [metadata management](metadata-management.md).
+
+Issue #25's approved browse-only scope changes catalogue function bodies and
+keeps the captured public table/index/trigger/ACL/RLS baseline unchanged. Retired
+search replicas and journal synchronization triggers must be absent in fresh
+replay. Existing Edge meta_contains and PGroonga indexes remain unchanged.
+See [catalogue capacity](catalogue-capacity.md) for isolation and release gates.
+
+Database #27 / Next #111 adds user-session `api.kb_catalogue_identifier_v1` for
+current-library normalized DOI and exact standard numbers. The sole public
+schema addition is a nonunique DOI expression index; existing indexes and Edge
+`meta_contains` remain unchanged. See [catalogue capacity](catalogue-capacity.md).

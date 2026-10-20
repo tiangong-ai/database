@@ -9,7 +9,7 @@ whenToUse: "When exporting schema, authoring migrations or selecting a database 
 whenToUpdate: "When helper CLI contracts, dependencies or adoption steps change."
 checkPaths: [scripts/**, supabase/config.toml, .env.*.example]
 lastReviewedAt: 2026-10-20
-lastReviewedCommit: cf137cb8a8b8105192b54cdfbe44ee96d7aede5c
+lastReviewedCommit: 767623f9f3d894dfe9180cdc082235d57f9a3063
 ---
 
 # Development
@@ -193,3 +193,14 @@ activation; preserve the prior app image. An app rollback may leave the additive
 read functions installed. Do not remove them while any client uses them. A future
 removal migration must drop the API and dependent invoker helpers in dependency
 order after rollback verification, never mutate published migration history.
+
+Issue #25 now targets registered authorization and browse performance only.
+The user deferred enhanced search; no new search replica/backfill is required.
+Nonempty catalogue `q` is explicitly unsupported. Qualify the final migration
+chain on a fresh disposable runtime rather than reusing an experimental stack
+containing retired search objects. See [catalogue capacity](catalogue-capacity.md).
+
+Database #27 / Next #111 adds user-session `api.kb_catalogue_identifier_v1` for
+current-library normalized DOI and exact standard numbers. The sole public
+schema addition is a nonunique DOI expression index; existing indexes and Edge
+`meta_contains` remain unchanged. See [catalogue capacity](catalogue-capacity.md).

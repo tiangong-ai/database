@@ -9,7 +9,7 @@ whenToUse: "When deciding source ownership, schema scope or generated-path bound
 whenToUpdate: "When schema ownership, imported scope or consumer contracts change."
 checkPaths: [supabase/**, scripts/**, tests/sql/**, docs/source-inventory.json]
 lastReviewedAt: 2026-10-20
-lastReviewedCommit: cf137cb8a8b8105192b54cdfbe44ee96d7aede5c
+lastReviewedCommit: 767623f9f3d894dfe9180cdc082235d57f9a3063
 ---
 
 # Database architecture
@@ -157,8 +157,9 @@ has unknown processing state. File associations do not attest current NAS
 availability. Ready requires completed document status and both recorded index
 flags; no external index is queried. Unregistered NAS files are excluded.
 
-Queries whitelist category, state, literal substring search (up to 200 chars),
-collection, typed detail key, page and page_size (1..50). Detail, list and metric
+Queries whitelist category and state,
+collection, typed detail key, page and page_size (1..50). Nonempty legacy `q`
+requests fail with SQLSTATE 22023 / CATALOGUE_SEARCH_UNSUPPORTED. Detail, list and metric
 filters share the same permission-filtered snapshot. Pages sort by update time
 and key; totals cover the filtered set rather than the current page. Invalid
 queries fail, and unavailable results must never be presented as zeros.
@@ -172,18 +173,36 @@ abstracts. Registered rows still enforce their original ACL/masking, and their
 complete visible legacy-reference set suppresses source duplicates **before**
 display filters. All stages remain one stable RPC snapshot.
 
-Exact counts and literal substring searches still scan applicable authorized
-records; this is not constant-time pagination. Page numbers remain compatible,
-including page 10000. The owned 500,000-row / 1,900-byte abstract fixture gates
-an 8-second statement budget for overview, empty category, existing/missing
-detail, next/deep pages and search. Transaction statistics additionally reject
-journal reads for an empty ESG query and sequential scans for keyed details.
-These synthetic local results do not establish production hardware capacity or
-arbitrary registered-document distributions. Future indexed search, cursors or
-summary views must preserve actor-scoped counts and deduplication semantics.
+Exact counts still scan applicable authorized identities; this is not constant-time
+pagination. Page numbers remain compatible, including page 10000. The earlier
+500,000-journal-only fixture missed registered authorization and broad-search
+costs. Issue #25 replaces it with the mixed qualification described below.
 
-A document-only reader does not inherit access to its parent collection: the
-projection masks collection ID/name and uses `other` unless collection read is
-granted. An active accessible document counts as registered file evidence even
-when the material candidate map is empty. Multiple independently registered
-entries in different collections remain separate catalogue records.
+### Catalogue capacity correction (#25)
+
+Registered projection resolves readable collections once and materializes the
+actor's direct document grants once. The unchanged canonical authorization
+helpers remain the equivalence oracle. Creator/owner/public visibility and
+collection/subtree/user/group read/manage grants are preserved; revoked and
+expired grants never qualify. Collection metadata is masked independently from
+document visibility. No cross-request permission cache is introduced.
+
+The approved first batch does not create search replicas, trigram indexes, short
+filters or source synchronization triggers. The three abandoned, unmerged search
+migrations remain in PR/Git history, not in the final replay chain. Published
+migration bytes are unchanged. A small forward validator rejects nonempty `q`;
+empty or absent `q` remains browsing. Next exposes an explicit unsupported-link
+state rather than silently ignoring an old query.
+
+Sort/count intermediates use typed identities and hydrate at most 50 legacy rows.
+Registered bodies remain materialized once for ACL masking and explicit-link
+suppression. This is not constant-time pagination; real-scale browsing still has
+the unchanged 8-second gate. See [capacity qualification](catalogue-capacity.md).
+DOI/standard-number lookup is the separate Next #111 slice; cross-library,
+abstract and arbitrary-field search stays in Next #110 Backlog. Original Edge
+meta_contains functions, semantic matching and field indexes remain unchanged.
+
+Database #27 / Next #111 adds user-session `api.kb_catalogue_identifier_v1` for
+current-library normalized DOI and exact standard numbers. The sole public
+schema addition is a nonunique DOI expression index; existing indexes and Edge
+`meta_contains` remain unchanged. See [catalogue capacity](catalogue-capacity.md).
