@@ -184,3 +184,8 @@ keeps the captured public table/index/trigger/ACL/RLS baseline unchanged. Retire
 search replicas and journal synchronization triggers must be absent in fresh
 replay. Existing Edge meta_contains and PGroonga indexes remain unchanged.
 See [catalogue capacity](catalogue-capacity.md) for isolation and release gates.
+
+Database #27 / Next #111 adds user-session `api.kb_catalogue_identifier_v1` for
+current-library normalized DOI and exact standard numbers. The sole public
+schema addition is a nonunique DOI expression index; existing indexes and Edge
+`meta_contains` remain unchanged. See [catalogue capacity](catalogue-capacity.md).

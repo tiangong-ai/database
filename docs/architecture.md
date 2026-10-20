@@ -201,3 +201,8 @@ the unchanged 8-second gate. See [capacity qualification](catalogue-capacity.md)
 DOI/standard-number lookup is the separate Next #111 slice; cross-library,
 abstract and arbitrary-field search stays in Next #110 Backlog. Original Edge
 meta_contains functions, semantic matching and field indexes remain unchanged.
+
+Database #27 / Next #111 adds user-session `api.kb_catalogue_identifier_v1` for
+current-library normalized DOI and exact standard numbers. The sole public
+schema addition is a nonunique DOI expression index; existing indexes and Edge
+`meta_contains` remain unchanged. See [catalogue capacity](catalogue-capacity.md).

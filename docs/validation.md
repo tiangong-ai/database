@@ -202,7 +202,7 @@ collection isolation, three-source explicit-link deduplication, deterministic
 pages, count/filter parity, unknown versus missing file state, status transitions,
 input bounds, anonymous/service-role denial and immediate grant revocation.
 `catalogue_boundary.sql` pins ownership, search paths, function execution and
-absence of private schema USAGE. The additive catalogue fixture pins seven new
+absence of private schema USAGE. The additive catalogue fixture pins ten catalogue
 functions without replacing existing objects. `scripts/test-database.sh` runs
 the HTTP checks on clean replay and upgrade, alongside the existing resource,
 metadata, key and worker permission suites. No hosted credentials are needed.
@@ -228,6 +228,15 @@ sessions, input/error boundaries and permission revocation on replay and upgrade
 
 `sql_body_fingerprint.py` mutates five SQL-standard functions in rolled-back
 transactions and checks exact body-hash changes. Catalog-only fixtures pin final
-function attributes/ACLs and unchanged public schema. Old search-only regression
+function attributes/ACLs and the explicitly added DOI index; existing public objects and Edge indexes remain intact. Old search-only regression
 and memory/space experiments remain historical evidence, not current acceptance.
 A fresh official Preview and exact-head CI are still required before release.
+
+Identifier qualification adds `kb_catalogue_identifier_smoke.sql`: normalization
+parity, duplicate candidates, punctuation preservation, visible canonical links,
+hidden-source RLS, hidden-material non-suppression, state filters, invalid input,
+source update and service-writer index maintenance. The ordinary Auth/PostgREST
+runner exercises the new RPC with two actors and anon/service denial. Capacity
+checks retain the browse assertions, then add 50k standards and exact/absent DOI
+lookups, no journal sequential scan, three reused generic identifier calls and
+the added btree size/build time. No production credentials or rows are used.

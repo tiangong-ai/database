@@ -55,6 +55,13 @@ analyze public.kb_documents;
 analyze public.kb_collections;
 analyze public.kb_grants;
 
+-- Measure the additional lookup index on populated data, with no row replica.
+-- DDL and source rows roll back together; this is an owned synthetic database.
+\timing on
+drop index public.journals_catalogue_doi_exact_idx;
+create index journals_catalogue_doi_exact_idx on public.journals
+ (lower(regexp_replace(btrim(doi),'^(https?://(dx\.)?doi\.org/|doi:\s*)','','i')));
+select pg_relation_size('public.journals_catalogue_doi_exact_idx') as identifier_index_bytes;
 set local statement_timeout='8s';
 -- Exercise parameter-independent plans used by reused PostgREST statements.
 set local plan_cache_mode=force_generic_plan;
@@ -98,6 +105,28 @@ do $$ declare result jsonb; expected jsonb; begin
  assert (result->>'total')::int=1499000 and jsonb_array_length(result->'rows')=50, 'deep page count';
  assert (select jsonb_agg(r->>'id' order by ordinal) from jsonb_array_elements(result->'rows') with ordinality x(r,ordinal))=expected, 'deep page identities and order';
 end $$;
+reset role;
+set local statement_timeout=0;
+insert into public.standards(id,standard_number,title)
+ select md5('identifier-capacity-'||i)::uuid,'GB/T '||i||'-2026','Synthetic standard '||i from generate_series(1,50000)i;
+analyze public.standards;
+set local statement_timeout='8s';
+set local role authenticated;
+do $$ declare r jsonb; before_scan bigint; begin
+ select seq_tup_read into before_scan from pg_stat_xact_user_tables where relid='public.journals'::regclass;
+ r:=api.kb_catalogue_identifier_v1('{"category":"journals","identifier":"https://doi.org/10.000/CAPACITY-499999"}');
+ assert (r->>'total')::int=1 and r->'rows'->0->>'title'='Synthetic article 499999','Large exact DOI lookup';
+ assert (api.kb_catalogue_identifier_v1('{"category":"journals","identifier":"10.000/missing"}')->>'total')::int=0,'Large absent DOI';
+ assert (select seq_tup_read=before_scan from pg_stat_xact_user_tables where relid='public.journals'::regclass),'DOI lookup must not sequentially scan journals';
+ r:=api.kb_catalogue_identifier_v1('{"category":"standards","identifier":" gb/t 49999-2026 "}');
+ assert (r->>'total')::int=1 and r->'rows'->0->>'title'='Synthetic standard 49999','50k standards exact lookup without speculative index';
+end $$;
+prepare identifier_capacity(jsonb) as select (api.kb_catalogue_identifier_v1($1)->>'total')::int;
+execute identifier_capacity('{"category":"journals","identifier":"10.000/capacity-1"}');
+execute identifier_capacity('{"category":"journals","identifier":"10.000/not-found"}');
+execute identifier_capacity('{"category":"standards","identifier":"GB/T 1-2026"}');
+do $$ begin assert (select generic_plans=3 and custom_plans=0 from pg_prepared_statements where name='identifier_capacity'),'Reused identifier plan'; end $$;
+deallocate identifier_capacity;
 -- Unsupported free text is rejected before touching the large source.
 do $$ declare term text; before_scan bigint; begin
  select seq_tup_read into before_scan from pg_stat_xact_user_tables where relid='public.journals'::regclass;

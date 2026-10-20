@@ -4165,6 +4165,10 @@
           "name": "journals_abstract_fetch_candidates_idx"
         },
         {
+          "definition": "CREATE INDEX journals_catalogue_doi_exact_idx ON public.journals USING btree (lower(regexp_replace(btrim((doi)::text), '^(https?://(dx\\.)?doi\\.org/|doi:\\s*)'::text, ''::text, 'i'::text)))",
+          "name": "journals_catalogue_doi_exact_idx"
+        },
+        {
           "definition": "CREATE UNIQUE INDEX journals_pkey ON public.journals USING btree (id)",
           "name": "journals_pkey"
         },

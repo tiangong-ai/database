@@ -138,6 +138,15 @@ try:
         assert denied['code']=='22023' and denied['message']=='CATALOGUE_SEARCH_UNSUPPORTED'
     for query in ({'page_size':51},{'page':0},{'page':1.2},{'page':10**20},{'category':'invented'},{'state':'invented'},{'q':'x'*201},{'key':'invalid'},{'key':'journals:'+'-'*36},{'collection':'invalid'},{'actor_id':actor},[],None):
         expect(rpc('kb_catalogue_v1',{'p_query':query},sessions[0]),400,'invalid query')
+    lookup={'category':'journals','identifier':'https://doi.org/10.000/'+journal.upper()}
+    found=expect(rpc('kb_catalogue_identifier_v1',{'p_query':lookup},sessions[0]),200,'identifier ordinary session')
+    assert found['total']==1 and found['rows'][0]['id']==eid, 'Canonical material via source DOI'
+    found=expect(rpc('kb_catalogue_identifier_v1',{'p_query':lookup},sessions[1]),200,'identifier other session')
+    assert found['total']==1 and found['rows'][0]['id']==journal, 'Inaccessible material does not suppress source'
+    expect(rpc('kb_catalogue_identifier_v1',{'p_query':lookup},anon),401,'identifier anonymous denied')
+    expect(rpc('kb_catalogue_identifier_v1',{'p_query':lookup},service),403,'identifier service denied')
+    expect(rpc('kb_catalogue_identifier_v1',{'p_query':{'category':'all','identifier':'a'}},sessions[0]),400,'identifier current-library bound')
+    checks.append('identifier exact source match and canonical material; ordinary sessions; anon/service denial')
     expect(rpc('kb_catalogue_v1',{},anon),401,'anonymous denied')
     expect(rpc('kb_catalogue_v1',{},service),403,'service role denied')
     assert sql("select has_schema_privilege('authenticated','private','usage');")=='f'

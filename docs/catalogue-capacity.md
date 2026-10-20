@@ -16,7 +16,7 @@ lastReviewedCommit: 04e7a7a7f951f0124cbcee419cf878fd0d2f592c
 
 The 2026-10-20 user-approved scope keeps navigation, visible scale, category
 lists, stable pages, shared typed-key details and explicit source/document links.
-Next #111 separately adds scoped identifier lookup. Next #110 defers cross-library,
+Next #111 / database #27 add a separately committed scoped identifier lookup. Next #110 defers cross-library,
 abstract and arbitrary metadata substring search until usage requirements exist.
 
 ## Current implementation and migration boundary
@@ -59,3 +59,41 @@ PDF filenames, permissions, or historical migration ledger as recovery.
 The unchanged Edge meta_contains functions and existing indexes remain outside
 this change. Main currently still exposes old q until a future authorized release;
 local/Preview success does not claim a production behavior change.
+
+## Identifier lookup (database #27 / Next #111)
+
+`api.kb_catalogue_identifier_v1` accepts an ordinary authenticated session and
+`category=journals|standards`, `identifier` (1–512 characters, no controls),
+plus the same bounded page, state and collection filters. It rejects detail keys,
+other categories and nonempty q. Absent/empty identifier in Next uses browsing.
+DOI uses the existing resource normalization (trim, lowercase, DOI URL/doi:
+prefix removal); standard numbers use trim/lowercase only. Internal spaces,
+slashes, hyphens, punctuation and leading zeroes are preserved. No stored value,
+source UUID, PDF path or document link is rewritten.
+
+All permitted duplicates remain candidates. Explicit visible legacy links resolve
+to the canonical material row; hidden materials cannot suppress visible source
+rows. Matching DOI alone never merges records. Legacy sources run under invoker
+RLS before counts and association matches; collection/status filters cannot
+resurrect suppressed legacy rows. Category means the current displayed library: a
+material moved to reports is excluded from journals lookup together with its
+suppressed source; it remains browsable under reports. Lookup does not silently
+search across libraries or override selected state/collection filters. Detail routes keep their existing typed-key
+contract, without a new alias resolver. API is user-session-only; anon and service
+role execution are denied, and no private schema USAGE is granted.
+
+A nonunique `journals_catalogue_doi_exact_idx` expression btree supports the
+normalized equality predicate. Its built-in expression is checked against the
+existing private normalizer, avoiding any change to historical helper grants.
+Existing journal/Edge indexes are untouched. Standards initially use an exact
+scan, qualified with 50,000 synthetic rows. No substring or metadata search is
+added. The index is built transactionally: release planning must allow its write
+lock and measure production headroom. A five-second lock-acquisition timeout and
+five-minute statement cap bound the migration; failure rolls it back. It does not
+claim zero write interruption.
+
+Owned 1 GiB/no-swap, two-CPU qualification on 2026-10-20 measured 60,940,288 index
+bytes on 1.5m synthetic journals, 1.26 seconds for populated index creation,
+0.52–0.53 seconds for hit/miss DOI requests, and 0.54 seconds for a 50k standard
+request alongside 60k registered documents. These are synthetic measurements,
+not production peak-space or latency guarantees. No 12 GiB expansion is authorized.
