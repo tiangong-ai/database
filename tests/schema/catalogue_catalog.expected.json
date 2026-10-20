@@ -165,7 +165,7 @@
       "owner": "postgres",
       "strict": false,
       "returns": "trigger",
-      "body_md5": "d8169455d2ef663c2293f7d65b559baf",
+      "body_md5": "05fd90f78ebd4b482cd9a22e8c0fd102",
       "language": "plpgsql",
       "parallel": "u",
       "arguments": "",

@@ -148,6 +148,7 @@ if (( ${#failed_tests[@]} != 0 )); then
 fi
 "$python_bin" "$repo_root/tests/runtime/resource_contract.py" "$db_container"
 "$python_bin" "$repo_root/tests/runtime/resource_delete_concurrency.py" "$db_container"
+"$python_bin" "$repo_root/tests/runtime/catalogue_projection_concurrency.py" "$db_container"
 run_sql < "$repo_root/tests/schema/resource_boundary.sql"
 run_sql < "$repo_root/tests/schema/resource_http_errors.sql"
 SUPABASE_CLI="$supabase_bin" "$python_bin" "$repo_root/tests/runtime/resource_api.py" "$db_container" "$test_root"
@@ -227,6 +228,7 @@ run_sql -At < "$repo_root/tests/schema/public_catalog.sql" > "$test_root/upgrade
 "$python_bin" "$repo_root/tests/schema/check_catalog.py" --actual "$test_root/upgraded-catalog.json"
 "$python_bin" "$repo_root/tests/runtime/resource_contract.py" "$db_container"
 "$python_bin" "$repo_root/tests/runtime/resource_delete_concurrency.py" "$db_container"
+"$python_bin" "$repo_root/tests/runtime/catalogue_projection_concurrency.py" "$db_container"
 run_sql < "$repo_root/tests/schema/resource_boundary.sql"
 run_sql < "$repo_root/tests/schema/resource_http_errors.sql"
 SUPABASE_CLI="$supabase_bin" "$python_bin" "$repo_root/tests/runtime/resource_api.py" "$db_container" "$test_root"

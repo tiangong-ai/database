@@ -56,6 +56,7 @@ analyze public.kb_documents;
 analyze public.kb_collections;
 analyze public.kb_grants;
 
+select jsonb_build_object('projection_rows',(select count(*) from private.kb_catalogue_journal_search),'projection_table_bytes_including_toast',pg_table_size('private.kb_catalogue_journal_search'),'projection_index_bytes',pg_indexes_size('private.kb_catalogue_journal_search'),'projection_total_bytes',pg_total_relation_size('private.kb_catalogue_journal_search')) as capacity_storage;
 set local statement_timeout='8s';
 -- Exercise parameter-independent plans used by reused PostgREST statements.
 set local plan_cache_mode=force_generic_plan;
@@ -131,6 +132,12 @@ do $$ declare result jsonb; begin
  assert (result->>'total')::bigint=1349100, 'Short/broad/literal search exact count: synthetic abstract';
  assert jsonb_array_length(result->'rows')=least(1349100,20), 'Bounded broad-search page';
 end $$;
+do $$ declare result jsonb; begin
+ result:=api.kb_catalogue_v1('{"q":"synthetic"}');
+ assert (result->>'total')::bigint=1549100, 'Mixed-source search exact count';
+ assert result->'groups'='[{"category":"journals","total":1500000,"associated":1000,"ready":0},{"category":"other","total":49100,"associated":49100,"ready":0}]'::jsonb, 'Mixed-source groups and explicit deduplication';
+ assert result->'metrics'='{"associated":50100,"ready":0,"missing":0,"unknown":1499000}'::jsonb, 'Mixed-source search status counts';
+end $$;
 -- In addition to PL/pgSQL's implicit cached statements above, exercise one
 -- explicit parameterized statement across different query shapes. Check the
 -- server counters rather than inferring generic-plan use from elapsed time.
@@ -149,5 +156,13 @@ do $$ begin
  assert (select generic_plans=10 and custom_plans=0 from pg_prepared_statements where name='catalogue_capacity'), 'Actual reused generic plans';
 end $$;
 deallocate catalogue_capacity;
+reset role;
+savepoint capacity_truncate;
+set local role service_role;
+truncate public.journals;
+reset role;
+do $$ begin assert not exists(select from private.kb_catalogue_journal_search),'Large source truncate clears its projection'; end $$;
+rollback to capacity_truncate;
+do $$ begin assert (select count(*) from private.kb_catalogue_journal_search)=1500000,'Truncate rollback restores all derived rows'; end $$;
 \timing off
 rollback;

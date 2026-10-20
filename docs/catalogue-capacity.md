@@ -33,7 +33,7 @@ gates; isolated timings alone never authorize deployment.
 
 Before merging a production-auto-deployed branch, recheck the exact head, official
 Preview, source/production migration ledger, API exposure, private schema denial,
-Supabase project binding and production deployment switch. Confirm only the two
+Supabase project binding and production deployment switch. Confirm only the three
 new capacity migrations are pending and previous ledger hashes are unchanged.
 Verify recent backup/PITR and available database disk space against the measured
 populated rehearsal, including projection heap, GIN/PK indexes, temporary work and
@@ -41,7 +41,9 @@ WAL headroom. Preview with empty data is not a backfill-duration benchmark.
 
 The first migration changes catalogue function bodies only. The second creates a
 private projection, two source triggers, backfills normalized text, builds its
-index and changes the internal legacy query. Source columns, rows, policies and
+index and changes the internal legacy query. The third preserves fast transactional
+source TRUNCATE by truncating the derived projection, avoiding row-by-row deletion
+and its WAL/bloat costs. Source columns, rows, policies and
 ACLs are not rewritten. Creating the sync trigger acquires a source write lock
 before reading the initial snapshot; it is held through commit, so no writer can
 race the backfill. Ordinary reads continue, but source writes can wait. This is

@@ -225,7 +225,12 @@ against the unchanged canonical helpers across 240 synthetic documents, includin
 expiry, revocation, group removal, misleading subtree prefixes, owner/creator,
 public and deleted states. `kb_catalogue_search_smoke.sql` compares the serialized
 substring oracle, source updates/deletes/truncate and rollback on projection
-failure, private access denial and restrictive source RLS. Existing real
+failure, private access denial, partial restrictive source RLS and all four source-write
+failure paths. `catalogue_projection_concurrency.py` verifies the actual
+CREATE TRIGGER lock blocks a concurrent writer but permits reads, then resumes
+atomic sync after commit; a busy source also exercises the 5-second migration
+lock-timeout rollback. Material visibility and mixed-kind key ordering are
+compared against the canonical helper/previous textual ordering. Existing real
 Auth/PostgREST catalogue tests run on clean replay and populated upgrade.
 
 The catalog collector hashes `pg_get_functiondef` for SQL-standard bodies, whose

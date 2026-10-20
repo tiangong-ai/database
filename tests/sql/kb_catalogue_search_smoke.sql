@@ -29,6 +29,17 @@ create policy catalogue_test_deny on public.journals as restrictive for select t
 set local role authenticated;
 do $$ begin assert (api.kb_catalogue_v1('{"category":"journals","q":"Alice"}')->>'total')::int=0,'Final invoker RLS is authoritative'; end $$;
 reset role;
+alter policy catalogue_test_deny on public.journals using(id=md5('catalogue-search-two')::uuid);
+set local role authenticated;
+do $$ declare result jsonb; begin
+ result:=api.kb_catalogue_v1('{"category":"journals","q":"journal","page_size":1}');
+ assert (result->>'total')::int=1 and result->'rows'->0->>'id'=md5('catalogue-search-two')::uuid::text, 'Hidden search candidates do not consume pages';
+ assert result->'rows'->0->'metadata'->>'title'='Other publication', 'Only visible metadata hydrated';
+ assert result->'groups'='[{"category":"journals","total":1,"associated":0,"ready":0}]'::jsonb, 'Partial RLS exact groups';
+ assert api.kb_catalogue_v1('{"category":"journals","q":"journal","page_size":1,"page":2}')->'rows'='[]', 'Partial RLS second page empty';
+ assert (api.kb_catalogue_v1(jsonb_build_object('key','journals:'||md5('catalogue-search-one')::uuid))->>'total')::int=0,'Hidden direct detail denied';
+end $$;
+reset role;
 drop policy catalogue_test_deny on public.journals;
 set local role service_role;
 update public.journals set abstract='ReplacementOnly',authors='[]' where id=md5('catalogue-search-one')::uuid;
@@ -45,12 +56,39 @@ reset role;
 alter table private.kb_catalogue_journal_search add constraint catalogue_failure_probe check(search_text not like '%fail-cache-write%');
 set local role service_role;
 do $$ begin
+ begin insert into public.journals(id,doi,title) values(md5('catalogue-search-rejected')::uuid,'10.000/rejected','fail-cache-write');
+  raise exception 'Expected insert projection failure'; exception when check_violation then null; end;
+ assert not exists(select from public.journals where id=md5('catalogue-search-rejected')::uuid),'Failed source insert leaves no row';
  begin update public.journals set abstract='fail-cache-write' where id=md5('catalogue-search-one')::uuid;
   raise exception 'Expected projection failure'; exception when check_violation then null; end;
  assert (select abstract='ReplacementOnly' from public.journals where id=md5('catalogue-search-one')::uuid),'Source update rolls back with projection';
- -- Existing privileged TRUNCATE usage remains supported without a new FK dependency.
- truncate public.journals;
+
 end $$;
+reset role;
+create function pg_temp.catalogue_projection_abort() returns trigger language plpgsql as $$ begin raise check_violation; end $$;
+create trigger catalogue_failure_probe before delete or truncate on private.kb_catalogue_journal_search
+ for each statement execute function pg_temp.catalogue_projection_abort();
+set local role service_role;
+do $$ begin
+ begin delete from public.journals where id=md5('catalogue-search-one')::uuid;
+  raise exception 'Expected delete projection failure'; exception when check_violation then null; end;
+ assert exists(select from public.journals where id=md5('catalogue-search-one')::uuid),'Failed delete preserves source';
+ begin truncate public.journals;
+  raise exception 'Expected truncate projection failure'; exception when check_violation then null; end;
+ assert exists(select from public.journals where id=md5('catalogue-search-one')::uuid),'Failed truncate preserves source';
+end $$;
+reset role;
+do $$ begin assert (select count(*)=1 from private.kb_catalogue_journal_search),'Failed source delete/truncate preserves projection'; end $$;
+drop trigger catalogue_failure_probe on private.kb_catalogue_journal_search;
+set local role service_role;
+update public.journals set id=md5('catalogue-search-renamed')::uuid where id=md5('catalogue-search-one')::uuid;
+reset role;
+do $$ begin
+ assert not exists(select from private.kb_catalogue_journal_search where id=md5('catalogue-search-one')::uuid),'Explicit source ID update removes old projection ID';
+ assert exists(select from private.kb_catalogue_journal_search where id=md5('catalogue-search-renamed')::uuid),'Explicit source ID update syncs new projection ID';
+end $$;
+set local role service_role;
+truncate public.journals;
 reset role;
 do $$ begin assert not exists(select from private.kb_catalogue_journal_search),'Truncate removes the projection atomically'; end $$;
 rollback;
