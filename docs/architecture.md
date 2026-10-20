@@ -9,7 +9,7 @@ whenToUse: "When deciding source ownership, schema scope or generated-path bound
 whenToUpdate: "When schema ownership, imported scope or consumer contracts change."
 checkPaths: [supabase/**, scripts/**, tests/sql/**, docs/source-inventory.json]
 lastReviewedAt: 2026-10-20
-lastReviewedCommit: 5cff89c50baf6d97cd2e31011889387dfc54e05a
+lastReviewedCommit: 04e7a7a7f951f0124cbcee419cf878fd0d2f592c
 ---
 
 # Database architecture
@@ -195,6 +195,9 @@ The typed immutable encoder takes only text/jsonb, avoiding timezone/enum-depend
 index content. Two owner-only triggers synchronously maintain insert, relevant
 update, identifier update, delete and truncate in the source transaction. Failures
 abort the source write; there is no asynchronous stale-success window.
+The initial bulk backfill embeds the identical encoder expression to avoid
+per-row SET-bound SQL wrapper memory amplification; ongoing trigger writes use
+the shared encoder. Populated equivalence qualification covers both paths.
 
 The projection has RLS enabled with no policies or client table grants. Its
 private candidate helper validates an ordinary Auth session and is inaccessible

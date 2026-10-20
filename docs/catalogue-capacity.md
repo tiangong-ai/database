@@ -9,7 +9,7 @@ whenToUse: "Before qualifying or releasing the Issue #25 catalogue capacity corr
 whenToUpdate: "When catalogue projection, performance gates or release evidence changes."
 checkPaths: [supabase/migrations/*kb_catalogue*.sql, tests/performance/catalogue_capacity.sql, tests/sql/kb_catalogue*smoke.sql]
 lastReviewedAt: 2026-10-20
-lastReviewedCommit: 5cff89c50baf6d97cd2e31011889387dfc54e05a
+lastReviewedCommit: 04e7a7a7f951f0124cbcee419cf878fd0d2f592c
 ---
 
 # Catalogue capacity and release
@@ -17,7 +17,7 @@ lastReviewedCommit: 5cff89c50baf6d97cd2e31011889387dfc54e05a
 ## Scope and evidence
 
 Issue [database #25](https://github.com/tiangong-ai/database/issues/25) corrects
-both the registered document projection and literal metadata search. Historical
+both the registered document projection and literal metadata search. Deployed historical
 migrations, source metadata, document identities, NAS/PDF files, roles and workers
 are unchanged. The existing Next catalogue response remains version 1.
 
@@ -106,8 +106,8 @@ The original published backfill subsequently failed in a fresh 1 GB local
 container with a confirmed cgroup OOM. A 500k-row comparison passed using the
 identical text expression directly in the bulk statement and failed through the
 per-row SQL wrapper. This is a separate migration blocker, not evidence for a
-larger disk. The proposed correction and complete populated rehearsal must pass
-before release. The observed failure alone does not establish the exact memory
+larger disk. The authorized correction passed the populated rehearsal below; current-head CI
+and a fresh official Preview remain required before release. The observed failure alone does not establish the exact memory
 behavior of a hosted Micro instance.
 
 The first populated peak rehearsal covered only three migrations and retained
@@ -116,6 +116,47 @@ about 1 GiB WAL. Production settings are `max_wal_size=4GB` and
 rehearsal. `max_wal_size` is not a hard disk cap. Preserve raw data-directory,
 database, retained-WAL, temporary-file and memory samples; report the sampling
 interval and account for short-lived sort files missed between samples.
+
+The completed **corrected-backfill** rehearsal used fresh main
+`e702d268`, 1 GiB/no-swap/2 CPU, 1.5m journals and 60k documents, with the WAL
+settings above. Migration `20261020053109` used corrected SHA-256
+`bc100bfedc2bca4294a5e5e0d1aaba1de9c98c89e878298e3318050643ceecea`;
+the short-filter migration used
+`d824f554a6d0995904141f7a3f6ae7ed0204de80f5740cb37760f463a2680f36`.
+The operator explicitly authorized revising this one unmerged migration on
+2026-10-20 after the original OOM reproduction. No deployed migration is changed.
+Recreate disposable Preview state before qualifying the new bytes; an old
+Preview's already-applied ledger is not proof of a clean corrected replay.
+
+| Measured item | Bytes / observation |
+| --- | ---: |
+| Data directory before forward migrations | 4,440,064,000 |
+| Observed peak / after checkpoint | 6,653,804,544 |
+| Observed additional space | 2,213,740,544 (2.062 GiB) |
+| Full-text projection including indexes/TOAST | 1,338,826,752 |
+| Short-filter relation including primary key | 320,495,616 |
+| Retained WAL before / peak | 1,073,741,824 / 1,627,389,952 |
+| PK-sort cumulative temporary writes | 84,230,144 |
+| Conservative additional-space budget | 2,297,970,688 (2.140 GiB) |
+| Text backfill/index / short-filter migration | 140.23 s / 358.33 s |
+| OOM kills during the complete corrected sequence | 0 |
+
+Sampling ran approximately every 0.5 seconds. No live temporary file was caught,
+but statement counters recorded the PK-sort writes, so the conservative budget
+adds those bytes to the observed maximum rather than asserting zero temporary
+space. Source row counts and both 1.5m-row projection counts were retained.
+This is a measured synthetic budget, not a hard production upper bound: live
+writes, archive lag, different text distributions and existing bloat can add
+space. Keep additional operational free space beyond the migration budget.
+An 8 GB volume must be assessed against its **current exact free bytes**, not
+the local rehearsal's smaller starting database or a rounded dashboard label.
+Neither a 12 GB requirement nor 8 GB release safety follows from this run alone.
+
+The full local repository gate also passed (20 SQL smokes, runtime/HTTP permissions,
+concurrency, actual Auth consumers, capacity and populated upgrade). Its wrapper
+requested a 1 GiB cap, but observed memory exceeded it; this run counts only as
+ordinary full regression, not constrained qualification. The separately owned
+populated rehearsal and CASE capacity run supply the constrained evidence.
 
 Current operator instruction is **no disk expansion, merge or deployment**.
 The earlier 12 GB proposal is not an active authorization. First publish measured

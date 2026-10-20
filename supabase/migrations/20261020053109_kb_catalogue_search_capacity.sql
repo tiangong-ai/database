@@ -43,7 +43,9 @@ create trigger kb_catalogue_journal_search_sync
 create trigger kb_catalogue_journal_search_truncate
  after truncate on public.journals for each statement execute function private.kb_catalogue_journal_sync_v1();
 insert into private.kb_catalogue_journal_search(id,search_text)
- select id,private.kb_catalogue_journal_text_v1(title,doi,journal,authors,date,abstract) from public.journals;
+ -- Keep the identical encoder expression in the bulk statement: invoking the
+ -- SET-bound SQL function per row retains excessive memory in a large backfill.
+ select id,lower(jsonb_build_object('title',title,'doi',doi,'journal',journal,'authors',authors,'date',date,'abstract',abstract)::text||' '||coalesce(title,'')) from public.journals;
 create index kb_catalogue_journal_search_trgm_idx on private.kb_catalogue_journal_search
  using gin(search_text extensions.gin_trgm_ops);
 analyze private.kb_catalogue_journal_search;
