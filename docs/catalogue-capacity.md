@@ -7,9 +7,9 @@ owner: database
 language: en
 whenToUse: "Before qualifying or releasing the Issue #25 catalogue capacity correction."
 whenToUpdate: "When catalogue projection, performance gates or release evidence changes."
-checkPaths: [supabase/migrations/*kb_catalogue*.sql, tests/performance/catalogue_capacity.sql, tests/sql/kb_catalogue*smoke.sql]
-lastReviewedAt: 2026-10-20
-lastReviewedCommit: 984422600774bec939157076b9123d4fa07240a0
+checkPaths: [supabase/migrations/20261020154540_kb_journals_page.sql, tests/sql/kb_journals_page_smoke.sql, supabase/migrations/*kb_catalogue*.sql, tests/performance/catalogue_capacity.sql, tests/sql/kb_catalogue*smoke.sql]
+lastReviewedAt: 2026-10-21
+lastReviewedCommit: 890d2c9760476a2e37970b74d99e995b992fe3ac
 ---
 
 # Catalogue browse capacity
@@ -157,3 +157,6 @@ new index or timeout increase is introduced. Other field sorts, DOI lookup and
 source details keep their existing paths. Database deployment must precede the
 paired Next change; the user declined paid Preview and no production write is
 authorized by these diagnostic measurements.
+
+The appended read-scan follow-up explicitly notifies PostgREST to reload its
+schema cache after the additive page RPC. It makes no permission or data change.

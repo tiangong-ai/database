@@ -8,8 +8,8 @@ language: en
 whenToUse: "When exporting schema, authoring migrations or selecting a database target."
 whenToUpdate: "When helper CLI contracts, dependencies or adoption steps change."
 checkPaths: [scripts/**, supabase/config.toml, .env.*.example]
-lastReviewedAt: 2026-10-20
-lastReviewedCommit: 984422600774bec939157076b9123d4fa07240a0
+lastReviewedAt: 2026-10-21
+lastReviewedCommit: 890d2c9760476a2e37970b74d99e995b992fe3ac
 ---
 
 # Development
@@ -217,3 +217,6 @@ new journals RPC must exist before the frontend switches its default page path;
 there is no fallback to the known slow query. The user declined paid hosted
 branches on 2026-10-20. Keep this candidate local/reviewable without triggering
 an automatic PR Preview; local validation does not waive hosted release gates.
+
+Retain all three published candidate migration files; the appended read-scan
+follow-up adds narrow-document filtering and the explicit PostgREST reload.

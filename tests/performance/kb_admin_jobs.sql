@@ -42,5 +42,21 @@ select 'failed' as filter, count(*), min(total_count) from list_kb_admin_jobs(md
 select 'stale' as filter, count(*), min(total_count) from list_kb_admin_jobs(md5('jobs-perf-admin')::uuid,'{"stale_running":true}');
 select 'deep_page' as filter, count(*), min(total_count) from list_kb_admin_jobs(md5('jobs-perf-admin')::uuid,'{}',25,50000);
 select 'empty_page' as filter, count(*) from list_kb_admin_jobs(md5('jobs-perf-admin')::uuid,'{}',25,180000);
+set local plan_cache_mode=force_generic_plan;
+select 'generic_default' as filter, count(*), min(total_count) from list_kb_admin_jobs(md5('jobs-perf-admin')::uuid);
+select 'stage' as filter, count(*), min(total_count) from list_kb_admin_jobs(md5('jobs-perf-admin')::uuid,'{"stage":"parse"}');
+select 'status' as filter, count(*), min(total_count) from list_kb_admin_jobs(md5('jobs-perf-admin')::uuid,'{"status":"dead"}');
+select 'worker' as filter, count(*), min(total_count) from list_kb_admin_jobs(md5('jobs-perf-admin')::uuid,'{"locked_by":"synthetic-worker"}');
+-- Three jobs for one document must not read the entire 60k-document fixture.
+-- A buffer budget detects the regression even on a fast, fully cached machine.
+do $$ declare plan jsonb; begin
+ execute format('explain (analyze,buffers,timing off,format json) select * from public.list_kb_admin_jobs(%L::uuid,%L::jsonb)',
+   md5('jobs-perf-admin')::uuid,
+   jsonb_build_object('document_id',md5('jobs-perf-d-1')::uuid)::text) into plan;
+ assert (plan->0->'Plan'->>'Actual Rows')::int=3,'single-document jobs preserved';
+ assert (plan->0->'Plan'->>'Shared Hit Blocks')::bigint
+      + (plan->0->'Plan'->>'Shared Read Blocks')::bigint < 1000,
+   'single-document query exceeds 1000-buffer budget';
+end $$;
 \timing off
 rollback;

@@ -8,8 +8,8 @@ language: en
 whenToUse: "Before submitting or integrating database changes."
 whenToUpdate: "When test commands, qualification scope or CI changes."
 checkPaths: [scripts/**, tests/**, .github/workflows/**, .docpact/**]
-lastReviewedAt: 2026-10-20
-lastReviewedCommit: 984422600774bec939157076b9123d4fa07240a0
+lastReviewedAt: 2026-10-21
+lastReviewedCommit: 890d2c9760476a2e37970b74d99e995b992fe3ac
 ---
 
 # Validation
@@ -266,3 +266,10 @@ and empty library pages under the same 8-second request budget. Uncommitted
 synthetic inserts prevent an all-visible-table shortcut.
 Production SELECT/EXPLAIN candidates are diagnostics only; until these migrations
 are deployed and actual application requests pass, hosted recovery is unverified.
+
+The review follow-up additionally tests single-document Jobs access against a
+1000-buffer bound (red before, green after predicate pushdown), plus stage/status/
+worker filtering. Upgrade qualification reapplies all three correction files.
+
+The narrow Jobs buffer gate also forces a generic plan; both document and job
+source branches must retain index probes, not merely pass on a custom first call.

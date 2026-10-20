@@ -7,9 +7,9 @@ owner: database
 language: en
 whenToUse: "When reviewing or qualifying the Jobs timeout fix."
 whenToUpdate: "When Jobs query behavior, fixtures or measured evidence changes."
-checkPaths: [supabase/migrations/20261013091317_optimize_kb_admin_jobs_authorization.sql, tests/performance/kb_admin_jobs.sql, tests/sql/kb_admin_jobs_permissions_smoke.sql, tests/runtime/qualify_jobs_upgrade.py]
-lastReviewedAt: 2026-10-20
-lastReviewedCommit: 984422600774bec939157076b9123d4fa07240a0
+checkPaths: [supabase/migrations/20261020154538_optimize_kb_admin_jobs_document_scan.sql, supabase/migrations/20261020160222_kb_admin_read_scan_followup.sql, supabase/migrations/20261013091317_optimize_kb_admin_jobs_authorization.sql, tests/performance/kb_admin_jobs.sql, tests/sql/kb_admin_jobs_permissions_smoke.sql, tests/runtime/qualify_jobs_upgrade.py]
+lastReviewedAt: 2026-10-21
+lastReviewedCommit: 890d2c9760476a2e37970b74d99e995b992fe3ac
 ---
 
 # Jobs list timeout investigation
@@ -162,3 +162,25 @@ The function identity, execution attributes and service-role-only ACL are retain
 No production maintenance, timeout change, worker operation or business write
 was performed. Paid Preview is declined; required hosted release evidence remains
 outstanding and must not be represented as passed.
+
+Review follow-up: the repeat production candidate plan measured 2.798s, while
+the first production measurement was 4.867s and another repeat was 4.735s; none
+is a local timing or deployed RPC result. Single-document filtering regressed
+from 4.889ms (original body) to 1024.627ms (initial candidate) in read-only SQL.
+The appended follow-up pushes the same document ID restriction into the
+authorized-document CTE; its read-only candidate measured 0.709ms. The original
+post-join filter remains too. Default/filter/count/permission behavior is intact.
+
+The synthetic 60k-document regression first failed a 1000 shared-buffer budget
+for three jobs belonging to one document, then passed with the follow-up. Stage,
+status and worker filters also retain the local 5-second bound. The follow-up
+notifies PostgREST to refresh its schema cache for the preceding additive RPC.
+Original Jobs empty pages still return no count row (Next total 0); this existing
+contract is deliberately unchanged in the timeout fix.
+
+Forced generic-plan testing exposed a second narrow-filter regression: an OR
+predicate alone could still scan all jobs/documents. The final follow-up uses
+mutually exclusive keyed/unkeyed source branches on both tables, so only the
+keyed index probes execute for a document filter even under a reused plan.
+The same 1000-buffer regression fails before and passes after this correction;
+default and stage/status/worker calls also pass with forced generic plans.

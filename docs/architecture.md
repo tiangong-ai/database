@@ -8,8 +8,8 @@ language: en
 whenToUse: "When deciding source ownership, schema scope or generated-path boundaries."
 whenToUpdate: "When schema ownership, imported scope or consumer contracts change."
 checkPaths: [supabase/**, scripts/**, tests/sql/**, docs/source-inventory.json]
-lastReviewedAt: 2026-10-20
-lastReviewedCommit: 984422600774bec939157076b9123d4fa07240a0
+lastReviewedAt: 2026-10-21
+lastReviewedCommit: 890d2c9760476a2e37970b74d99e995b992fe3ac
 ---
 
 # Database architecture
@@ -220,3 +220,7 @@ The forward Jobs migration materializes the original authorized document set
 (id, filename and collection path) before joining jobs. Both permission branches,
 including action grants on deleted documents, and every filter/order/count remain
 unchanged. No existing table/index/ACL, worker or timeout setting changes.
+
+The scan follow-up also applies an explicit Jobs document_id filter before
+materialization, preserving indexed narrow requests. Other job filters remain
+in their original scope; it notifies PostgREST after adding the journals RPC.
