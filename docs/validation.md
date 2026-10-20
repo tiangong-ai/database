@@ -9,7 +9,7 @@ whenToUse: "Before submitting or integrating database changes."
 whenToUpdate: "When test commands, qualification scope or CI changes."
 checkPaths: [scripts/**, tests/**, .github/workflows/**, .docpact/**]
 lastReviewedAt: 2026-10-20
-lastReviewedCommit: 04e7a7a7f951f0124cbcee419cf878fd0d2f592c
+lastReviewedCommit: 767623f9f3d894dfe9180cdc082235d57f9a3063
 ---
 
 # Validation
@@ -215,6 +215,10 @@ rollback-only transaction. Mixed collection/group/subtree/direct authorization
 leaves 9,900 denied documents. Overview, category, exact/missing detail, next/deep
 pages and ten reused generic prepared calls keep the 8-second statement timeout.
 Exact identities, counts, groups, states and source pruning are asserted.
+Next/deep-page RPC results are captured in separate 8-second statements before
+the independent reference scans and identity assertions, which have a bounded
+30-second oracle budget. Reference-query work must not consume the product
+request budget; no RPC executes under the oracle timeout.
 Unsupported nonempty `q` is rejected without scanning journals, not treated as
 an empty query. No search replicas or trigger-disabled bulk-load shortcuts remain.
 

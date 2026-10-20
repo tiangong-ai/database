@@ -93,18 +93,29 @@ do $$ declare result jsonb; begin
  result:=api.kb_catalogue_v1('{"key":"journals:00000000-0000-4000-8000-000000000001"}');
  assert (result->>'total')::int=0 and result->'rows'='[]'::jsonb, 'Missing keyed detail';
 end $$;
+-- Time each product request alone. The independent reference query below also
+-- walks the large fixture; charging both scans to one 8s DO block made the
+-- oracle consume the product latency budget on shared CI runners.
+create temporary table catalogue_page_results(page integer primary key,body jsonb) on commit drop;
+insert into catalogue_page_results values(2,api.kb_catalogue_v1('{"category":"journals","state":"unknown","page":2,"page_size":50}'));
+insert into catalogue_page_results values(10000,api.kb_catalogue_v1('{"category":"journals","state":"unknown","page":10000,"page_size":50}'));
+-- Only oracle/identity assertions receive this separate bounded budget. No RPC
+-- call runs under it; the two calls above still have statement_timeout='8s'.
+set local statement_timeout='30s';
 do $$ declare result jsonb; expected jsonb; begin
- result:=api.kb_catalogue_v1('{"category":"journals","state":"unknown","page":2,"page_size":50}');
+ select body into strict result from catalogue_page_results where page=2;
  select jsonb_agg(id::text order by id) into expected from (select id from public.journals where id not in (select md5('catalogue-capacity-'||s)::uuid from generate_series(1,1000)s) order by id limit 50 offset 50) p;
  assert (result->>'total')::int=1499000 and jsonb_array_length(result->'rows')=50, 'next page count';
  assert (select jsonb_agg(r->>'id' order by ordinal) from jsonb_array_elements(result->'rows') with ordinality x(r,ordinal))=expected, 'next page identities and order';
 end $$;
 do $$ declare result jsonb; expected jsonb; begin
- result:=api.kb_catalogue_v1('{"category":"journals","state":"unknown","page":10000,"page_size":50}');
+ select body into strict result from catalogue_page_results where page=10000;
  select jsonb_agg(id::text order by id) into expected from (select id from public.journals where id not in (select md5('catalogue-capacity-'||s)::uuid from generate_series(1,1000)s) order by id limit 50 offset 499950) p;
  assert (result->>'total')::int=1499000 and jsonb_array_length(result->'rows')=50, 'deep page count';
  assert (select jsonb_agg(r->>'id' order by ordinal) from jsonb_array_elements(result->'rows') with ordinality x(r,ordinal))=expected, 'deep page identities and order';
 end $$;
+drop table catalogue_page_results;
+set local statement_timeout='8s';
 reset role;
 set local statement_timeout=0;
 insert into public.standards(id,standard_number,title)

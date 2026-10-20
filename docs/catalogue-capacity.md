@@ -9,7 +9,7 @@ whenToUse: "Before qualifying or releasing the Issue #25 catalogue capacity corr
 whenToUpdate: "When catalogue projection, performance gates or release evidence changes."
 checkPaths: [supabase/migrations/*kb_catalogue*.sql, tests/performance/catalogue_capacity.sql, tests/sql/kb_catalogue*smoke.sql]
 lastReviewedAt: 2026-10-20
-lastReviewedCommit: 04e7a7a7f951f0124cbcee419cf878fd0d2f592c
+lastReviewedCommit: 767623f9f3d894dfe9180cdc082235d57f9a3063
 ---
 
 # Catalogue browse capacity
@@ -97,3 +97,18 @@ bytes on 1.5m synthetic journals, 1.26 seconds for populated index creation,
 0.52–0.53 seconds for hit/miss DOI requests, and 0.54 seconds for a 50k standard
 request alongside 60k registered documents. These are synthetic measurements,
 not production peak-space or latency guarantees. No 12 GiB expansion is authorized.
+
+The final three-migration populated rehearsal (1.5m journals, 60k documents,
+1k links, 1 GiB/no swap and two CPUs) measured 60,940,288 index bytes,
+55,453,056 total generated WAL bytes and 108,249,088 temporary bytes written
+by the index build. Sampled data-directory growth was 60,956,672 bytes; the
+sample interval can miss short-lived sort files, so it is not an absolute peak.
+Index + all temporary bytes written + generated WAL gives a conservative
+224,642,432-byte accounting allowance for this synthetic run, not a production
+upper bound. Reserve at least 1 GiB free and remain below the platform's disk
+threshold before release; recheck WAL/load immediately before the authorized
+window. A different production DOI width/distribution may change index cost.
+
+The capacity test times next/deep-page RPCs separately from independent expected
+identity scans. Each RPC retains its 8-second statement timeout; the reference
+scans use a separate 30-second test-only budget. No production timeout changes.
