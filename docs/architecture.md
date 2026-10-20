@@ -157,8 +157,9 @@ has unknown processing state. File associations do not attest current NAS
 availability. Ready requires completed document status and both recorded index
 flags; no external index is queried. Unregistered NAS files are excluded.
 
-Queries whitelist category, state, literal substring search (up to 200 chars),
-collection, typed detail key, page and page_size (1..50). Detail, list and metric
+Queries whitelist category and state,
+collection, typed detail key, page and page_size (1..50). Nonempty legacy `q`
+requests fail with SQLSTATE 22023 / CATALOGUE_SEARCH_UNSUPPORTED. Detail, list and metric
 filters share the same permission-filtered snapshot. Pages sort by update time
 and key; totals cover the filtered set rather than the current page. Invalid
 queries fail, and unavailable results must never be presented as zeros.
@@ -186,54 +187,17 @@ collection/subtree/user/group read/manage grants are preserved; revoked and
 expired grants never qualify. Collection metadata is masked independently from
 document visibility. No cross-request permission cache is introduced.
 
-`private.kb_catalogue_journal_search` is a rebuildable search projection, never a
-metadata authority. Its normalized text exactly preserves the existing serialized
-journal metadata plus title substring semantics, including JSON keys, nulls,
-escapes and literal `%`/`_`. Only journals need this projection in the current
-production-sized workload; other categories retain their existing invoker reads.
-The typed immutable encoder takes only text/jsonb, avoiding timezone/enum-dependent
-index content. Two owner-only triggers synchronously maintain insert, relevant
-update, identifier update, delete and truncate in the source transaction. Failures
-abort the source write; there is no asynchronous stale-success window.
-The initial bulk backfill embeds the identical encoder expression to avoid
-per-row SET-bound SQL wrapper memory amplification; ongoing trigger writes use
-the shared encoder. Populated equivalence qualification covers both paths.
+The approved first batch does not create search replicas, trigram indexes, short
+filters or source synchronization triggers. The three abandoned, unmerged search
+migrations remain in PR/Git history, not in the final replay chain. Published
+migration bytes are unchanged. A small forward validator rejects nonempty `q`;
+empty or absent `q` remains browsing. Next exposes an explicit unsupported-link
+state rather than silently ignoring an old query.
 
-The projection has RLS enabled with no policies or client table grants. Its
-private candidate helper validates an ordinary Auth session and is inaccessible
-through direct SQL name resolution or PostgREST (`private` has no USAGE/exposure).
-Only the existing, OID-bound invoker catalogue query consumes the intermediate
-IDs and joins `public.journals` under its original RLS **before** counts, ordering,
-pagination or hydration. The helper never limits candidates. A restrictive source
-RLS regression and denied direct-helper/table calls enforce this composition;
-private schema exposure or USAGE would invalidate the security boundary.
-
-Trigram search operates on stored normalized text. One/two-character searches
-first use a bounded 1024-bit per-row negative filter, then the unchanged
-`strpos` predicate on stored text. All single characters and adjacent pairs set
-two fixed MD5-derived slots. This is an acceleration structure, not a security
-hash or a match verdict: collisions/saturation only increase residual work.
-Missing filter rows also fall back to the exact predicate. Query slots are
-computed once, and no minimum query length or substring semantics change.
-
-`private.kb_catalogue_journal_short_filter` has a UUID primary key, a 128-byte
-signature, RLS without policies, and no client grants. Owner-only triggers on
-the text projection maintain it in the source transaction, including identifier
-changes and transactional TRUNCATE. Its migration locks that projection before
-the backfill; a source writer waits at its existing projection trigger. Reads
-continue. The parallel-capable backfill only uses transaction-local planner
-settings and never changes the server configuration. No production compute or
-storage expansion is implied by this migration.
-The candidate-to-source join is a direct join over unique projection IDs, avoiding
-PostgreSQL's poor distinct-cardinality estimate for an opaque `IN` subquery.
-Narrow candidate and explicit hydration branches keep abstracts out of the bulk
-join; only selected page rows build the final JSON. Sort/count intermediates use
-UUIDs instead of full metadata bodies. Ordering remains update time, kind and UUID,
-which matches the existing typed `kind:uuid` key ordering for the supported kinds.
-Category groups and global metrics share one aggregation; page sorting carries
-only kind, identity, category and timestamp. Registered bodies remain materialized
-once for permission masking and explicit-link deduplication; the page-only
-hydration guarantee applies to legacy metadata.
-
-See [capacity qualification and release](catalogue-capacity.md) for migration
-locks, storage, regression scope and recovery limits.
+Sort/count intermediates use typed identities and hydrate at most 50 legacy rows.
+Registered bodies remain materialized once for ACL masking and explicit-link
+suppression. This is not constant-time pagination; real-scale browsing still has
+the unchanged 8-second gate. See [capacity qualification](catalogue-capacity.md).
+DOI/standard-number lookup is the separate Next #111 slice; cross-library,
+abstract and arbitrary-field search stays in Next #110 Backlog. Original Edge
+meta_contains functions, semantic matching and field indexes remain unchanged.

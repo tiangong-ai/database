@@ -41,13 +41,7 @@ class PriorCatalogTests(unittest.TestCase):
                 self.assertEqual(difference['fields'], ['body_md5'])
             else:
                 self.assertIn(name, expected_acl)
-                self.assertEqual(difference['fields'], ['acl', 'triggers'] if name == 'journals' else ['acl'])
-                if name == 'journals':
-                    old = next(r for r in prior['relations'] if r['name'] == name)
-                    new = next(r for r in current['relations'] if r['name'] == name)
-                    additions = [t for t in new['triggers'] if t not in old['triggers']]
-                    self.assertEqual({t['name'] for t in additions}, {'kb_catalogue_journal_search_sync', 'kb_catalogue_journal_search_truncate'})
-                    self.assertTrue(all(t in new['triggers'] for t in old['triggers']))
+                self.assertEqual(difference['fields'], ['acl'])
                 expected_acl.remove(name)
         self.assertFalse(expected_acl)
 

@@ -8,13 +8,6 @@ truncate public.journals,public.edu_meta,public.esg_meta,public.standards,
  public.reports,public.internal_use,public.green_deal_meta,
  private.kb_resource_entries,public.kb_documents cascade;
 insert into auth.users(id,role) values(md5('catalogue-capacity-actor')::uuid,'authenticated');
--- This is a read-capacity fixture, not a per-row ingestion benchmark. Bulk-load
--- the disposable projection with its canonical encoder, then build its index
--- and filter. The smoke/concurrency gates separately exercise real source writes.
--- All trigger/DDL changes are inside this rollback-only transaction.
-alter table public.journals disable trigger kb_catalogue_journal_search_sync;
-alter table private.kb_catalogue_journal_search disable trigger kb_catalogue_short_filter_sync;
-drop index private.kb_catalogue_journal_search_trgm_idx;
 with varied as materialized (
  select v,left(string_agg(md5(v::text||':'||part::text),'' order by part),1900) abstract
  from generate_series(0,999)v cross join generate_series(1,60)part group by v
@@ -23,38 +16,7 @@ insert into public.journals(id,doi,title,abstract)
 select md5('catalogue-capacity-'||s)::uuid,'10.000/capacity-'||s,
  'Synthetic article '||s,case when s%10=0 then varied.abstract else repeat('synthetic abstract ',100) end
  from generate_series(1,1500000)s join varied on varied.v=s%1000;
-insert into private.kb_catalogue_journal_search(id,search_text)
- -- Same encoder expression, avoiding the large statement's per-row SQL wrapper
- -- memory growth. Ordinary source-write tests still use the real trigger/helper.
- select id,lower(jsonb_build_object('title',title,'doi',doi,'journal',journal,'authors',authors,'date',date,'abstract',abstract)::text||' '||coalesce(title,'')) from public.journals;
-do $$ begin
- assert not exists(
-   select from (select * from public.journals order by id limit 1000) j
-   join private.kb_catalogue_journal_search s using(id)
-   where s.search_text<>private.kb_catalogue_journal_text_v1(j.title,j.doi,j.journal,j.authors,j.date,j.abstract)
- ),'Bulk fixture encoding matches the canonical source-write helper';
-end $$;
-create index kb_catalogue_journal_search_trgm_idx on private.kb_catalogue_journal_search
- using gin(search_text extensions.gin_trgm_ops);
-set local max_parallel_workers_per_gather=2;
-set local min_parallel_table_scan_size=0;
-set local parallel_setup_cost=0;
-set local parallel_tuple_cost=0;
-create temporary table capacity_short_filter on commit drop as
- select id,private.kb_catalogue_short_signature_v1(search_text)::bit(1024) signature
- from private.kb_catalogue_journal_search;
-insert into private.kb_catalogue_journal_short_filter select * from capacity_short_filter;
-drop table capacity_short_filter;
-alter table private.kb_catalogue_journal_search enable trigger kb_catalogue_short_filter_sync;
-alter table public.journals enable trigger kb_catalogue_journal_search_sync;
--- Restore ordinary request planner settings before measuring query latency.
-set local max_parallel_workers_per_gather to default;
-set local min_parallel_table_scan_size to default;
-set local parallel_setup_cost to default;
-set local parallel_tuple_cost to default;
 analyze public.journals;
-analyze private.kb_catalogue_journal_search;
-analyze private.kb_catalogue_journal_short_filter;
 -- Mixed registered population: creator, collection, group/subtree, public and
 -- direct-document reads, plus 9,900 denied rows. No production rows are copied.
 insert into public.kb_groups(id,name,created_by)
@@ -93,8 +55,6 @@ analyze public.kb_documents;
 analyze public.kb_collections;
 analyze public.kb_grants;
 
-select jsonb_build_object('projection_rows',(select count(*) from private.kb_catalogue_journal_search),'projection_table_bytes_including_toast',pg_table_size('private.kb_catalogue_journal_search'),'projection_index_bytes',pg_indexes_size('private.kb_catalogue_journal_search'),'projection_total_bytes',pg_total_relation_size('private.kb_catalogue_journal_search')) as capacity_storage;
-select jsonb_build_object('short_filter_rows',(select count(*) from private.kb_catalogue_journal_short_filter),'short_filter_total_bytes',pg_total_relation_size('private.kb_catalogue_journal_short_filter')) as short_filter_storage;
 set local statement_timeout='8s';
 -- Exercise parameter-independent plans used by reused PostgREST statements.
 set local plan_cache_mode=force_generic_plan;
@@ -138,43 +98,18 @@ do $$ declare result jsonb; expected jsonb; begin
  assert (result->>'total')::int=1499000 and jsonb_array_length(result->'rows')=50, 'deep page count';
  assert (select jsonb_agg(r->>'id' order by ordinal) from jsonb_array_elements(result->'rows') with ordinality x(r,ordinal))=expected, 'deep page identities and order';
 end $$;
-do $$ declare result jsonb; begin
- result:=api.kb_catalogue_v1('{"category":"journals","q":"Synthetic article 499999"}');
- assert (result->>'total')::int=1 and jsonb_array_length(result->'rows')=1, 'Nonempty legacy search count';
- assert result->'rows'->0->>'title'='Synthetic article 499999', 'Search hydrates the matching row';
- assert result->'groups'='[{"category":"journals","total":1,"associated":0,"ready":0}]'::jsonb, 'Search group count';
- assert result->'metrics'='{"associated":0,"ready":0,"missing":0,"unknown":1}'::jsonb, 'Search metric counts';
-end $$;
-do $$ declare result jsonb; begin
- result:=api.kb_catalogue_v1('{"category":"journals","q":"sy"}');
- assert (result->>'total')::bigint=1500000, 'Short/broad/literal search exact count: sy';
- assert jsonb_array_length(result->'rows')=least(1500000,20), 'Bounded broad-search page';
-end $$;
-do $$ declare result jsonb; begin
- result:=api.kb_catalogue_v1('{"category":"journals","q":"a"}');
- assert (result->>'total')::bigint=1500000, 'Short/broad/literal search exact count: a';
- assert jsonb_array_length(result->'rows')=least(1500000,20), 'Bounded broad-search page';
-end $$;
-do $$ declare result jsonb; begin
- result:=api.kb_catalogue_v1('{"category":"journals","q":"zz"}');
- assert (result->>'total')::bigint=0, 'Short/broad/literal search exact count: zz';
- assert jsonb_array_length(result->'rows')=least(0,20), 'Bounded broad-search page';
-end $$;
-do $$ declare result jsonb; begin
- result:=api.kb_catalogue_v1('{"category":"journals","q":"%"}');
- assert (result->>'total')::bigint=0, 'Short/broad/literal search exact count: %';
- assert jsonb_array_length(result->'rows')=least(0,20), 'Bounded broad-search page';
-end $$;
-do $$ declare result jsonb; begin
- result:=api.kb_catalogue_v1('{"category":"journals","q":"synthetic abstract"}');
- assert (result->>'total')::bigint=1349100, 'Short/broad/literal search exact count: synthetic abstract';
- assert jsonb_array_length(result->'rows')=least(1349100,20), 'Bounded broad-search page';
-end $$;
-do $$ declare result jsonb; begin
- result:=api.kb_catalogue_v1('{"q":"synthetic"}');
- assert (result->>'total')::bigint=1549100, 'Mixed-source search exact count';
- assert result->'groups'='[{"category":"journals","total":1500000,"associated":1000,"ready":0},{"category":"other","total":49100,"associated":49100,"ready":0}]'::jsonb, 'Mixed-source groups and explicit deduplication';
- assert result->'metrics'='{"associated":50100,"ready":0,"missing":0,"unknown":1499000}'::jsonb, 'Mixed-source search status counts';
+-- Unsupported free text is rejected before touching the large source.
+do $$ declare term text; before_scan bigint; begin
+ select seq_tup_read into before_scan from pg_stat_xact_user_tables where relid='public.journals'::regclass;
+ foreach term in array array['a','sy','synthetic abstract','%','测试',' '] loop
+  begin
+   perform api.kb_catalogue_v1(jsonb_build_object('q',term));
+   raise exception 'Unsupported free text accepted';
+  exception when sqlstate '22023' then
+   assert sqlerrm='CATALOGUE_SEARCH_UNSUPPORTED','Explicit unsupported-search error';
+  end;
+ end loop;
+ assert (select seq_tup_read=before_scan from pg_stat_xact_user_tables where relid='public.journals'::regclass),'Rejected search must not scan journals';
 end $$;
 -- In addition to PL/pgSQL's implicit cached statements above, exercise one
 -- explicit parameterized statement across different query shapes. Check the
@@ -187,26 +122,13 @@ execute catalogue_capacity(jsonb_build_object('key','journals:'||md5('catalogue-
 execute catalogue_capacity('{"key":"journals:00000000-0000-4000-8000-000000000001"}');
 execute catalogue_capacity('{"category":"journals","state":"unknown","page":2,"page_size":50}');
 execute catalogue_capacity('{"category":"journals","state":"unknown","page":10000,"page_size":50}');
-execute catalogue_capacity('{"category":"journals","q":"Synthetic article 499999"}');
-execute catalogue_capacity('{"category":"journals","q":"sy"}');
-execute catalogue_capacity('{"category":"journals","q":"zz"}');
+execute catalogue_capacity('{"category":"journals","page_size":1}');
+execute catalogue_capacity('{"state":"associated"}');
+execute catalogue_capacity('{"state":"missing"}');
 do $$ begin
  assert (select generic_plans=10 and custom_plans=0 from pg_prepared_statements where name='catalogue_capacity'), 'Actual reused generic plans';
 end $$;
 deallocate catalogue_capacity;
 reset role;
-savepoint capacity_truncate;
-set local role service_role;
-truncate public.journals;
-reset role;
-do $$ begin
- assert not exists(select from private.kb_catalogue_journal_search),'Large source truncate clears its projection';
- assert not exists(select from private.kb_catalogue_journal_short_filter),'Large source truncate clears short filters';
-end $$;
-rollback to capacity_truncate;
-do $$ begin
- assert (select count(*) from private.kb_catalogue_journal_search)=1500000,'Truncate rollback restores all derived rows';
- assert (select count(*) from private.kb_catalogue_journal_short_filter)=1500000,'Truncate rollback restores all short filters';
-end $$;
 \timing off
 rollback;

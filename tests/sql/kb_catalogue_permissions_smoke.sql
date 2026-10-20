@@ -1,6 +1,7 @@
 -- Equivalence oracle is the unchanged canonical single-document authorization,
 -- not a second copy of the new batch predicate. Disposable synthetic records.
 begin;
+truncate public.journals,public.edu_meta,public.esg_meta,public.standards,public.reports,public.internal_use,public.green_deal_meta,private.kb_resource_entries,public.kb_documents cascade;
 insert into auth.users(id,role) values(md5('catalogue-oracle-actor')::uuid,'authenticated');
 insert into public.kb_groups(id,name,created_by) values(md5('catalogue-oracle-group')::uuid,'catalogue oracle',md5('catalogue-oracle-actor')::uuid);
 insert into public.kb_group_members(group_id,user_id) values(md5('catalogue-oracle-group')::uuid,md5('catalogue-oracle-actor')::uuid);
@@ -78,7 +79,7 @@ select set_config('test.catalogue_order',(
 set local role authenticated;
 do $$ declare expected jsonb:=current_setting('test.catalogue_order')::jsonb; result jsonb; page integer; expected_page jsonb; actual jsonb; begin
  for page in 1..((jsonb_array_length(expected)+49)/50) loop
-  result:=api.kb_catalogue_v1(jsonb_build_object('q','catalogue-oracle-','page_size',50,'page',page));
+  result:=api.kb_catalogue_v1(jsonb_build_object('page_size',50,'page',page));
   select jsonb_agg(value order by ord) into expected_page from jsonb_array_elements(expected) with ordinality e(value,ord) where ord between (page-1)*50+1 and page*50;
   select jsonb_agg(r->>'key' order by ord) into actual from jsonb_array_elements(result->'rows') with ordinality e(r,ord);
   assert actual=expected_page and (result->>'total')::int=jsonb_array_length(expected),'Mixed document/material/legacy pages preserve old textual key ordering';

@@ -179,14 +179,8 @@ The separate six-resource metadata gateway (database #20) adds three authenticat
 RPCs with private per-type grants; existing S2 contracts, legacy tables and ACLs
 remain unchanged. See [metadata management](metadata-management.md).
 
-Issue #25 adds two synchronous search projection triggers to `public.journals`;
-only its `triggers` field changes in the current public fixture. All original
-columns, source data authority, IDs, ACLs, RLS and indexes remain unchanged.
-The projection table and three helper functions are in the separate additive
-catalogue fixture. The immutable prior-chain snapshot remains unchanged, and
-its delta test explicitly pins these two trigger additions. See
-[catalogue capacity](catalogue-capacity.md) for source-write/backfill gates.
-The short-query refinement adds one private filter relation, two private
-functions and two triggers on the derived text relation only. Its expected
-catalog changes stay in the additive catalogue fixture; the captured public
-baseline and source-table trigger contract are unchanged.
+Issue #25's approved browse-only scope changes catalogue function bodies and
+keeps the captured public table/index/trigger/ACL/RLS baseline unchanged. Retired
+search replicas and journal synchronization triggers must be absent in fresh
+replay. Existing Edge meta_contains and PGroonga indexes remain unchanged.
+See [catalogue capacity](catalogue-capacity.md) for isolation and release gates.

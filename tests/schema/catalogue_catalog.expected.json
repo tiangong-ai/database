@@ -1,187 +1,5 @@
 {
-  "relations": [
-    {
-      "acl": [
-        {
-          "grantee": "postgres",
-          "grantable": false,
-          "privilege": "DELETE"
-        },
-        {
-          "grantee": "postgres",
-          "grantable": false,
-          "privilege": "INSERT"
-        },
-        {
-          "grantee": "postgres",
-          "grantable": false,
-          "privilege": "MAINTAIN"
-        },
-        {
-          "grantee": "postgres",
-          "grantable": false,
-          "privilege": "REFERENCES"
-        },
-        {
-          "grantee": "postgres",
-          "grantable": false,
-          "privilege": "SELECT"
-        },
-        {
-          "grantee": "postgres",
-          "grantable": false,
-          "privilege": "TRIGGER"
-        },
-        {
-          "grantee": "postgres",
-          "grantable": false,
-          "privilege": "TRUNCATE"
-        },
-        {
-          "grantee": "postgres",
-          "grantable": false,
-          "privilege": "UPDATE"
-        }
-      ],
-      "rls": true,
-      "kind": "r",
-      "name": "private.kb_catalogue_journal_search",
-      "owner": "postgres",
-      "columns": [
-        {
-          "name": "id",
-          "type": "uuid",
-          "default": null,
-          "identity": "",
-          "not_null": true,
-          "generated": ""
-        },
-        {
-          "name": "search_text",
-          "type": "text",
-          "default": null,
-          "identity": "",
-          "not_null": true,
-          "generated": ""
-        }
-      ],
-      "indexes": [
-        {
-          "name": "kb_catalogue_journal_search_pkey",
-          "definition": "CREATE UNIQUE INDEX kb_catalogue_journal_search_pkey ON private.kb_catalogue_journal_search USING btree (id)"
-        },
-        {
-          "name": "kb_catalogue_journal_search_trgm_idx",
-          "definition": "CREATE INDEX kb_catalogue_journal_search_trgm_idx ON private.kb_catalogue_journal_search USING gin (search_text gin_trgm_ops)"
-        }
-      ],
-      "policies": [],
-      "triggers": [
-        {
-          "name": "kb_catalogue_short_filter_sync",
-          "enabled": "O",
-          "definition": "CREATE TRIGGER kb_catalogue_short_filter_sync AFTER INSERT OR DELETE OR UPDATE OF id, search_text ON private.kb_catalogue_journal_search FOR EACH ROW EXECUTE FUNCTION private.kb_catalogue_short_filter_sync_v1()"
-        },
-        {
-          "name": "kb_catalogue_short_filter_truncate",
-          "enabled": "O",
-          "definition": "CREATE TRIGGER kb_catalogue_short_filter_truncate AFTER TRUNCATE ON private.kb_catalogue_journal_search FOR EACH STATEMENT EXECUTE FUNCTION private.kb_catalogue_short_filter_sync_v1()"
-        }
-      ],
-      "force_rls": false,
-      "constraints": [
-        {
-          "name": "kb_catalogue_journal_search_pkey",
-          "type": "p",
-          "validated": true,
-          "definition": "PRIMARY KEY (id)"
-        }
-      ]
-    },
-    {
-      "acl": [
-        {
-          "grantee": "postgres",
-          "grantable": false,
-          "privilege": "DELETE"
-        },
-        {
-          "grantee": "postgres",
-          "grantable": false,
-          "privilege": "INSERT"
-        },
-        {
-          "grantee": "postgres",
-          "grantable": false,
-          "privilege": "MAINTAIN"
-        },
-        {
-          "grantee": "postgres",
-          "grantable": false,
-          "privilege": "REFERENCES"
-        },
-        {
-          "grantee": "postgres",
-          "grantable": false,
-          "privilege": "SELECT"
-        },
-        {
-          "grantee": "postgres",
-          "grantable": false,
-          "privilege": "TRIGGER"
-        },
-        {
-          "grantee": "postgres",
-          "grantable": false,
-          "privilege": "TRUNCATE"
-        },
-        {
-          "grantee": "postgres",
-          "grantable": false,
-          "privilege": "UPDATE"
-        }
-      ],
-      "rls": true,
-      "kind": "r",
-      "name": "private.kb_catalogue_journal_short_filter",
-      "owner": "postgres",
-      "columns": [
-        {
-          "name": "id",
-          "type": "uuid",
-          "default": null,
-          "identity": "",
-          "not_null": true,
-          "generated": ""
-        },
-        {
-          "name": "signature",
-          "type": "bit(1024)",
-          "default": null,
-          "identity": "",
-          "not_null": true,
-          "generated": ""
-        }
-      ],
-      "indexes": [
-        {
-          "name": "kb_catalogue_journal_short_filter_pkey",
-          "definition": "CREATE UNIQUE INDEX kb_catalogue_journal_short_filter_pkey ON private.kb_catalogue_journal_short_filter USING btree (id)"
-        }
-      ],
-      "policies": [],
-      "triggers": [],
-      "force_rls": false,
-      "constraints": [
-        {
-          "name": "kb_catalogue_journal_short_filter_pkey",
-          "type": "p",
-          "validated": true,
-          "definition": "PRIMARY KEY (id)"
-        }
-      ]
-    }
-  ],
+  "relations": [],
   "functions": [
     {
       "acl": [
@@ -228,100 +46,12 @@
         }
       ],
       "cost": 100,
-      "name": "private.kb_catalogue_journal_matches_v1",
-      "rows": 1000000,
-      "owner": "postgres",
-      "strict": false,
-      "returns": "SETOF uuid",
-      "body_md5": "6823640d4ad10ecf869c68fae9abb89d",
-      "language": "plpgsql",
-      "parallel": "u",
-      "arguments": "p_search text",
-      "leakproof": false,
-      "volatility": "s",
-      "configuration": [
-        "search_path=pg_catalog"
-      ],
-      "full_arguments": "p_search text",
-      "security_definer": true
-    },
-    {
-      "acl": [
-        {
-          "grantee": "postgres",
-          "grantable": false,
-          "privilege": "EXECUTE"
-        }
-      ],
-      "cost": 100,
-      "name": "private.kb_catalogue_journal_sync_v1",
-      "rows": 0,
-      "owner": "postgres",
-      "strict": false,
-      "returns": "trigger",
-      "body_md5": "05fd90f78ebd4b482cd9a22e8c0fd102",
-      "language": "plpgsql",
-      "parallel": "u",
-      "arguments": "",
-      "leakproof": false,
-      "volatility": "v",
-      "configuration": [
-        "search_path=pg_catalog"
-      ],
-      "full_arguments": "",
-      "security_definer": true
-    },
-    {
-      "acl": [
-        {
-          "grantee": "authenticated",
-          "grantable": false,
-          "privilege": "EXECUTE"
-        },
-        {
-          "grantee": "postgres",
-          "grantable": false,
-          "privilege": "EXECUTE"
-        }
-      ],
-      "cost": 100,
-      "name": "private.kb_catalogue_journal_text_v1",
-      "rows": 0,
-      "owner": "postgres",
-      "strict": false,
-      "returns": "text",
-      "body_md5": "f4738061e650bf5ab149e471ae7388b8",
-      "language": "sql",
-      "parallel": "u",
-      "arguments": "p_title text, p_doi text, p_journal text, p_authors jsonb, p_date text, p_abstract text",
-      "leakproof": false,
-      "volatility": "i",
-      "configuration": [
-        "search_path=pg_catalog"
-      ],
-      "full_arguments": "p_title text, p_doi text, p_journal text, p_authors jsonb, p_date text, p_abstract text",
-      "security_definer": false
-    },
-    {
-      "acl": [
-        {
-          "grantee": "authenticated",
-          "grantable": false,
-          "privilege": "EXECUTE"
-        },
-        {
-          "grantee": "postgres",
-          "grantable": false,
-          "privilege": "EXECUTE"
-        }
-      ],
-      "cost": 100,
       "name": "private.kb_catalogue_legacy_v1",
       "rows": 1000,
       "owner": "postgres",
       "strict": false,
       "returns": "TABLE(kind text, id uuid, category text, updated_at timestamp with time zone, legacy_key text, body jsonb)",
-      "body_md5": "451807f7f956f247f360348240225019",
+      "body_md5": "d0ee12ab89ef2d96d2468e128e5069c2",
       "language": "sql",
       "parallel": "u",
       "arguments": "p_query jsonb, p_hydrate boolean",
@@ -383,7 +113,7 @@
       "owner": "postgres",
       "strict": false,
       "returns": "jsonb",
-      "body_md5": "8990ecb1baca5f862334bb572c52c73b",
+      "body_md5": "d02265fcb7a97590215089fc99f23d36",
       "language": "plpgsql",
       "parallel": "u",
       "arguments": "p_query jsonb",
@@ -491,58 +221,6 @@
     {
       "acl": [
         {
-          "grantee": "postgres",
-          "grantable": false,
-          "privilege": "EXECUTE"
-        }
-      ],
-      "cost": 100,
-      "name": "private.kb_catalogue_short_filter_sync_v1",
-      "rows": 0,
-      "owner": "postgres",
-      "strict": false,
-      "returns": "trigger",
-      "body_md5": "1c4d20907d70932615c37faaae15a4ea",
-      "language": "plpgsql",
-      "parallel": "u",
-      "arguments": "",
-      "leakproof": false,
-      "volatility": "v",
-      "configuration": [
-        "search_path=pg_catalog"
-      ],
-      "full_arguments": "",
-      "security_definer": true
-    },
-    {
-      "acl": [
-        {
-          "grantee": "postgres",
-          "grantable": false,
-          "privilege": "EXECUTE"
-        }
-      ],
-      "cost": 100,
-      "name": "private.kb_catalogue_short_signature_v1",
-      "rows": 0,
-      "owner": "postgres",
-      "strict": true,
-      "returns": "bit",
-      "body_md5": "b4cc7a5c410686e2d12f81922013cee3",
-      "language": "sql",
-      "parallel": "s",
-      "arguments": "s text",
-      "leakproof": false,
-      "volatility": "i",
-      "configuration": [
-        "search_path=pg_catalog"
-      ],
-      "full_arguments": "s text",
-      "security_definer": false
-    },
-    {
-      "acl": [
-        {
           "grantee": "authenticated",
           "grantable": false,
           "privilege": "EXECUTE"
@@ -559,7 +237,7 @@
       "owner": "postgres",
       "strict": false,
       "returns": "jsonb",
-      "body_md5": "1948176c6d2163044d2a6c7898fbf610",
+      "body_md5": "46f871f38e986b7af940f6cd6fb01e8c",
       "language": "sql",
       "parallel": "u",
       "arguments": "p_query jsonb",

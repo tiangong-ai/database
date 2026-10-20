@@ -237,7 +237,7 @@ rules:
         kind: capacity-gate
       - path: tests/sql/kb_catalogue*smoke.sql
         kind: catalogue-boundary
-      - path: tests/upgrade/catalogue_search_after.sql
+      - path: tests/sql/kb_catalogue_browse_smoke.sql
         kind: projection-upgrade
     requiredDocs:
       - path: docs/catalogue-capacity.md
@@ -246,4 +246,4 @@ rules:
         mode: review_or_update
       - path: docs/validation.md
         mode: review_or_update
-    reason: Catalogue performance, source authority and private projection release gates must remain explicit.
+    reason: Catalogue performance, source authority and browse-only release gates must remain explicit.

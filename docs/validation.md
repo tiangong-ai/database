@@ -209,51 +209,25 @@ metadata, key and worker permission suites. No hosted credentials are needed.
 
 ## Catalogue capacity and body integrity
 
-`tests/performance/catalogue_capacity.sql` seeds 1,500,000 synthetic journals
-with 1,900-byte abstracts (10% varied high-entropy text), 60,000 registered
-documents and 1,000 explicit material/source/document links, in a rollback-only
-transaction. Creator, public, user collection, group subtree/manage and direct
-document grants leave exactly 9,900 documents denied. Each overview, category,
-existing/missing detail, next/deep page, selective/broad/one/two-character/literal
-search must finish within the unchanged 8-second statement timeout. Exact counts,
-identities, groups, states, deduplication and ten reused generic prepared calls
-are asserted. Table statistics pin unrelated-category pruning and bounded primary
-key detail access. No production rows or remote target are accepted.
+`tests/performance/catalogue_capacity.sql` retains 1,500,000 synthetic journals
+with wide abstracts, 60,000 registered documents and 1,000 explicit links in a
+rollback-only transaction. Mixed collection/group/subtree/direct authorization
+leaves 9,900 denied documents. Overview, category, exact/missing detail, next/deep
+pages and ten reused generic prepared calls keep the 8-second statement timeout.
+Exact identities, counts, groups, states and source pruning are asserted.
+Unsupported nonempty `q` is rejected without scanning journals, not treated as
+an empty query. No search replicas or trigger-disabled bulk-load shortcuts remain.
 
-`kb_catalogue_permissions_smoke.sql` compares the batch result and collection mask
-against the unchanged canonical helpers across 240 synthetic documents, including
-expiry, revocation, group removal, misleading subtree prefixes, owner/creator,
-public and deleted states. `kb_catalogue_search_smoke.sql` compares the serialized
-substring oracle, source updates/deletes/truncate and rollback on projection
-failure, private access denial, partial restrictive source RLS and all four source-write
-failure paths. `catalogue_projection_concurrency.py` verifies the actual
-CREATE TRIGGER lock blocks a concurrent writer but permits reads, then resumes
-atomic sync after commit; a busy source also exercises the 5-second migration
-lock-timeout rollback. Material visibility and mixed-kind key ordering are
-compared against the canonical helper/previous textual ordering. Existing real
-Auth/PostgREST catalogue tests run on clean replay and populated upgrade.
+`kb_catalogue_permissions_smoke.sql` compares batch ACL/masking with unchanged
+canonical helpers and textual key ordering. `kb_catalogue_browse_smoke.sql`
+retains partial restrictive source RLS before counting/paging and direct-detail
+denial, plus assertions that abandoned search relations/triggers are absent.
+The HTTP catalogue runner uses only the owned disposable local database and
+isolates its synthetic catalogue rows from previous gates; it checks ordinary
+sessions, input/error boundaries and permission revocation on replay and upgrade.
 
-The catalog collector hashes `pg_get_functiondef` for SQL-standard bodies, whose
-`prosrc` is empty; older string bodies retain their historical `prosrc` hashes.
-`tests/schema/sql_body_fingerprint.py` changes each of the six
-SQL-standard catalogue bodies in a rolled-back local transaction and requires
-exactly a body fingerprint difference. This gate runs after catalog parity, and
-the final read verifies that all mutations were rolled back.
-
-
-The short-filter regression compares 255 one/two-character combinations against
-the raw metadata oracle, including Unicode combining marks, control characters,
-emoji, variation selectors and literal wildcard characters. Saturated signatures
-must not manufacture results; absent derived rows must retain exact fallback.
-Failure injection at the second derived layer checks all source write operations
-and transactional TRUNCATE/rollback. The concurrency gate also exercises the
-short-filter migration's lock on the text projection and a waiting source writer.
-
-The 1.5m read-capacity fixture bulk-loads its disposable projections using the
-canonical encoders, builds the GIN and parallel-capable short-filter stage, then
-restores triggers and ordinary planner settings before measuring. This avoids
-making per-row ingestion time the read-query gate. Trigger mutations remain
-rollback-scoped; source-write, failure and concurrency gates use enabled triggers.
-The full populated migration rehearsal must separately measure the actual forward
-SQL, including backfill, temporary files and retained/cumulative WAL. No test-only
-bulk-loading procedure is a production migration or operational repair recipe.
+`sql_body_fingerprint.py` mutates five SQL-standard functions in rolled-back
+transactions and checks exact body-hash changes. Catalog-only fixtures pin final
+function attributes/ACLs and unchanged public schema. Old search-only regression
+and memory/space experiments remain historical evidence, not current acceptance.
+A fresh official Preview and exact-head CI are still required before release.

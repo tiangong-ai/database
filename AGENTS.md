@@ -84,5 +84,5 @@ S9 role/consumer evidence and proposed read-only target scopes are maintained in
 Six-resource metadata development follows `docs/metadata-management.md`; no production user grants are seeded.
 
 Catalogue capacity changes follow `docs/catalogue-capacity.md`: qualify mixed
-production-scale synthetic data and private search projection consistency before
-release; the stored projection never replaces source metadata authority.
+production-scale synthetic browsing, authorization and explicit associations before
+release; enhanced catalogue search is deferred and no search replica is required.

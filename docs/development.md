@@ -194,9 +194,8 @@ read functions installed. Do not remove them while any client uses them. A futur
 removal migration must drop the API and dependent invoker helpers in dependency
 order after rollback verification, never mutate published migration history.
 
-Issue #25 adds a transaction-synchronized private journal search projection.
-Develop only on the owned disposable stack; production backfill and index creation
-require the maintenance checks in [catalogue capacity](catalogue-capacity.md).
-The backfill does not modify source rows or UUIDs. Never disable its triggers or
-repair its rows manually to force a passing query; qualify forward repairs and
-source-write rollback behavior instead.
+Issue #25 now targets registered authorization and browse performance only.
+The user deferred enhanced search; no new search replica/backfill is required.
+Nonempty catalogue `q` is explicitly unsupported. Qualify the final migration
+chain on a fresh disposable runtime rather than reusing an experimental stack
+containing retired search objects. See [catalogue capacity](catalogue-capacity.md).
