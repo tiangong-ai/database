@@ -38,6 +38,8 @@ do $$ declare result jsonb; begin
  assert result->'groups'='[{"category":"journals","total":1,"associated":0,"ready":0}]'::jsonb, 'Partial RLS exact groups';
  assert api.kb_catalogue_v1('{"category":"journals","q":"journal","page_size":1,"page":2}')->'rows'='[]', 'Partial RLS second page empty';
  assert (api.kb_catalogue_v1(jsonb_build_object('key','journals:'||md5('catalogue-search-one')::uuid))->>'total')::int=0,'Hidden direct detail denied';
+ result:=api.kb_catalogue_v1('{"category":"journals","q":"jo","page_size":1}');
+ assert (result->>'total')::int=1 and result->'rows'->0->>'id'=md5('catalogue-search-two')::uuid::text,'Short-filter candidates obey final source RLS before count and page';
 end $$;
 reset role;
 drop policy catalogue_test_deny on public.journals;
@@ -86,6 +88,8 @@ reset role;
 do $$ begin
  assert not exists(select from private.kb_catalogue_journal_search where id=md5('catalogue-search-one')::uuid),'Explicit source ID update removes old projection ID';
  assert exists(select from private.kb_catalogue_journal_search where id=md5('catalogue-search-renamed')::uuid),'Explicit source ID update syncs new projection ID';
+ assert not exists(select from private.kb_catalogue_journal_short_filter where id=md5('catalogue-search-one')::uuid),'ID update removes old short filter';
+ assert exists(select from private.kb_catalogue_journal_short_filter where id=md5('catalogue-search-renamed')::uuid),'ID update syncs new short filter';
 end $$;
 set local role service_role;
 truncate public.journals;

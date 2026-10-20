@@ -9,7 +9,7 @@ whenToUse: "Before submitting or integrating database changes."
 whenToUpdate: "When test commands, qualification scope or CI changes."
 checkPaths: [scripts/**, tests/**, .github/workflows/**, .docpact/**]
 lastReviewedAt: 2026-10-20
-lastReviewedCommit: cf137cb8a8b8105192b54cdfbe44ee96d7aede5c
+lastReviewedCommit: 5cff89c50baf6d97cd2e31011889387dfc54e05a
 ---
 
 # Validation
@@ -239,3 +239,21 @@ The catalog collector hashes `pg_get_functiondef` for SQL-standard bodies, whose
 SQL-standard catalogue bodies in a rolled-back local transaction and requires
 exactly a body fingerprint difference. This gate runs after catalog parity, and
 the final read verifies that all mutations were rolled back.
+
+
+The short-filter regression compares 255 one/two-character combinations against
+the raw metadata oracle, including Unicode combining marks, control characters,
+emoji, variation selectors and literal wildcard characters. Saturated signatures
+must not manufacture results; absent derived rows must retain exact fallback.
+Failure injection at the second derived layer checks all source write operations
+and transactional TRUNCATE/rollback. The concurrency gate also exercises the
+short-filter migration's lock on the text projection and a waiting source writer.
+
+The 1.5m read-capacity fixture bulk-loads its disposable projections using the
+canonical encoders, builds the GIN and parallel-capable short-filter stage, then
+restores triggers and ordinary planner settings before measuring. This avoids
+making per-row ingestion time the read-query gate. Trigger mutations remain
+rollback-scoped; source-write, failure and concurrency gates use enabled triggers.
+The full populated migration rehearsal must separately measure the actual forward
+SQL, including backfill, temporary files and retained/cumulative WAL. No test-only
+bulk-loading procedure is a production migration or operational repair recipe.

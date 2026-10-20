@@ -9,7 +9,7 @@ whenToUse: "Before qualifying or releasing the Issue #25 catalogue capacity corr
 whenToUpdate: "When catalogue projection, performance gates or release evidence changes."
 checkPaths: [supabase/migrations/*kb_catalogue*.sql, tests/performance/catalogue_capacity.sql, tests/sql/kb_catalogue*smoke.sql]
 lastReviewedAt: 2026-10-20
-lastReviewedCommit: e702d268c1d859952f196e9c759e89658a70e228
+lastReviewedCommit: 5cff89c50baf6d97cd2e31011889387dfc54e05a
 ---
 
 # Catalogue capacity and release
@@ -33,7 +33,7 @@ gates; isolated timings alone never authorize deployment.
 
 Before merging a production-auto-deployed branch, recheck the exact head, official
 Preview, source/production migration ledger, API exposure, private schema denial,
-Supabase project binding and production deployment switch. Confirm only the three
+Supabase project binding and production deployment switch. Confirm only the four
 new capacity migrations are pending and previous ledger hashes are unchanged.
 Verify recent backup/PITR and available database disk space against the measured
 populated rehearsal, including projection heap, GIN/PK indexes, temporary work and
@@ -43,13 +43,83 @@ The first migration changes catalogue function bodies only. The second creates a
 private projection, two source triggers, backfills normalized text, builds its
 index and changes the internal legacy query. The third preserves fast transactional
 source TRUNCATE by truncating the derived projection, avoiding row-by-row deletion
-and its WAL/bloat costs. Source columns, rows, policies and
+and its WAL/bloat costs. The fourth adds a compact short-query negative filter,
+its synchronous triggers and a single shared category/metric aggregation.
+Source columns, rows, policies and
 ACLs are not rewritten. Creating the sync trigger acquires a source write lock
 before reading the initial snapshot; it is held through commit, so no writer can
 race the backfill. Ordinary reads continue, but source writes can wait. This is
 **not** an online zero-write-interruption migration. Use a quiet maintenance
 window and a measured duration; `lock_timeout=5s` refuses a busy lock acquisition.
 Do not bypass this gate by raising role timeouts or disabling triggers.
+
+The short-filter backfill holds `ShareRowExclusiveLock` on the text projection,
+so source writers wait at their existing synchronous projection write. It builds
+all single-character/adjacent-pair signatures and then a primary key. Hash
+collisions or saturation cannot alter results because exact text remains the
+residual predicate. They can increase query cost: include varied alphabets and
+high-entropy metadata when judging capacity. Evaluate data files, temporary
+files and retained WAL separately from cumulative generated WAL. An observed
+local peak is not a guarantee of production WAL retention.
+
+The 2026-10-20 comparison rejected adopting an additional large PGroonga index
+as the default. It accelerated short misses, but internal Groonga files were
+not reflected by `pg_relation_size(index)` and significantly increased storage.
+A compact exact-pair alternative was also compared with the bit filter; its
+unlimited-memory improvement alone did not establish the best production choice.
+The selected forward candidate keeps the existing GIN, uses a fixed-size bit
+filter, and retains the exact substring/RLS contract. Latest CI and constrained
+capacity qualification remain required.
+
+### 2026-10-20 comparison and remaining gates
+
+All comparisons use synthetic data, not copied production rows. The shared
+fixture contains 1.5m journals, 60k registered documents, 1k explicit links and
+9,900 documents denied to the ordinary test user. Counts, filters, ordering and
+the 8-second per-statement deadline are unchanged.
+
+| Candidate | Additional short-query storage | Short miss `zz` | Broad short query `sy` |
+| --- | ---: | ---: | ---: |
+| Existing full-text projection/GIN | none | 2.32 s | 2.70 s |
+| Shared aggregation only | none | 2.32 s | 2.58 s |
+| Initial one-slot bit-filter prototype | 335.5 MB | 1.10 s | 2.31 s |
+| Exact adjacent-pair byte prototype | 642.9 MB | 0.81 s | 2.29 s |
+
+These four measurements used the same uncapped local runtime and are comparative
+observations, not a production latency promise. The forward two-slot MD5 filter
+uses 320.5 MB with bulk loading/PK construction. Its `CASE` residual prevents
+evaluating/decompressing full text for definite negatives. A full forced-generic
+and prepared-statement check under a 1 GB/2 CPU limit passed, with statements up
+to 3.29 s. Retain the earlier AND-based 8.012-second failure; only subsequent
+exact-source CI and Preview can supersede that head's failed check.
+
+The exact-pair prototype saves about 0.3 s on this miss at an additional ~307 MB
+versus the initial filter. Its build timing is not directly comparable: the
+first bit prototype used serial insertion, whereas the pair prototype used
+parallel CTAS. Likewise, overlapping prototype LSN deltas are contaminated;
+per-statement WAL was ~511 MB versus ~651 MB. The forward MD5 CTAS measured
+~356 MB generated WAL and ~84 MB cumulative PK-sort temporary writes. Do not
+add cumulative generated WAL to retained WAL or confuse temporary bytes written
+over time with simultaneously allocated files.
+
+The original published backfill subsequently failed in a fresh 1 GB local
+container with a confirmed cgroup OOM. A 500k-row comparison passed using the
+identical text expression directly in the bulk statement and failed through the
+per-row SQL wrapper. This is a separate migration blocker, not evidence for a
+larger disk. The proposed correction and complete populated rehearsal must pass
+before release. The observed failure alone does not establish the exact memory
+behavior of a hosted Micro instance.
+
+The first populated peak rehearsal covered only three migrations and retained
+about 1 GiB WAL. Production settings are `max_wal_size=4GB` and
+`min_wal_size=1GB`; those must be reflected in the complete four-migration
+rehearsal. `max_wal_size` is not a hard disk cap. Preserve raw data-directory,
+database, retained-WAL, temporary-file and memory samples; report the sampling
+interval and account for short-lived sort files missed between samples.
+
+Current operator instruction is **no disk expansion, merge or deployment**.
+The earlier 12 GB proposal is not an active authorization. First publish measured
+candidate steady-state and peak requirements, then obtain a capacity decision.
 
 If source writers cannot tolerate the measured pause, stop before merge and design
 a separately reviewed staged online backfill. Do not improvise one in production.

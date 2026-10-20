@@ -9,7 +9,7 @@ whenToUse: "When reviewing the production-derived legacy baseline or running con
 whenToUpdate: "When capture scope, privacy guarantees, parity or business-path validation changes."
 checkPaths: [supabase/migrations/**, tests/schema/**, tests/consumers/**, docs/legacy-schema-inventory.json]
 lastReviewedAt: 2026-10-20
-lastReviewedCommit: 94477e1ab2fc877f7dba8f5ee92abeb12ec8be53
+lastReviewedCommit: 5cff89c50baf6d97cd2e31011889387dfc54e05a
 ---
 
 # Knowledge Base legacy schema baseline
@@ -186,3 +186,7 @@ The projection table and three helper functions are in the separate additive
 catalogue fixture. The immutable prior-chain snapshot remains unchanged, and
 its delta test explicitly pins these two trigger additions. See
 [catalogue capacity](catalogue-capacity.md) for source-write/backfill gates.
+The short-query refinement adds one private filter relation, two private
+functions and two triggers on the derived text relation only. Its expected
+catalog changes stay in the additive catalogue fixture; the captured public
+baseline and source-table trigger contract are unchanged.

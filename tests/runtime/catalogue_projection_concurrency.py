@@ -67,10 +67,33 @@ try:
     assert rejected.returncode != 0 and '55P03' in rejected.stderr, 'Busy source aborts migration lock acquisition after 5s'
     finish(a, 'rollback;')
     assert sql("select not exists(select from pg_trigger where tgrelid='public.journals'::regclass and tgname='"+marker+"');") == 't', 'Failed migration leaves no trigger'
+
+    # The short-filter migration freezes the derived text relation. A source
+    # writer can lock journals first, but must wait at its existing sync trigger;
+    # the migration never needs a source-table write lock in the opposite order.
+    a = start("begin;set application_name='"+marker+"_short_migration';lock table private.kb_catalogue_journal_search in share row exclusive mode;select 'LOCKED';")
+    ready(a)
+    assert sql('select count(*)>=0 from public.journals;') == 't'
+    b = start("set application_name='"+marker+"_short_writer';set lock_timeout='10s';set role service_role;update public.journals set title='short-filter-updated' where id='"+row+"';select 'WRITTEN';")
+    deadline = time.monotonic() + 5
+    waiting = False
+    while time.monotonic() < deadline:
+        waiting = sql("select exists(select from pg_locks l join pg_stat_activity a on a.pid=l.pid where a.application_name='"+marker+"_short_writer' and l.relation='private.kb_catalogue_journal_search'::regclass and not l.granted);") == 't'
+        if waiting: break
+        time.sleep(.05)
+    assert waiting, 'Source writer waits behind the short-filter backfill lock'
+    finish(a, "insert into private.kb_catalogue_journal_short_filter select id,private.kb_catalogue_short_signature_v1(search_text) from private.kb_catalogue_journal_search on conflict(id) do update set signature=excluded.signature;commit;")
+    assert finish(b, '') == 'WRITTEN'
+    assert sql("select exists(select from public.journals j join private.kb_catalogue_journal_search s using(id) join private.kb_catalogue_journal_short_filter f using(id) where j.id='"+row+"' and j.title='short-filter-updated' and f.signature=private.kb_catalogue_short_signature_v1(s.search_text));") == 't', 'Resumed source writer synchronizes the latest signature'
+    a = start("begin;lock table private.kb_catalogue_journal_search in row exclusive mode;select 'LOCKED';")
+    ready(a)
+    rejected = subprocess.run(base, input="begin;set local lock_timeout='5s';lock table private.kb_catalogue_journal_search in share row exclusive mode;commit;", text=True, capture_output=True, timeout=10)
+    assert rejected.returncode != 0 and '55P03' in rejected.stderr, 'Busy derived source refuses the short-filter migration lock'
+    finish(a, 'rollback;')
 finally:
     for p in processes:
         if p.poll() is None:
             try: p.communicate('rollback;\n', timeout=2)
             except subprocess.TimeoutExpired: p.kill(); p.communicate()
     sql('drop trigger if exists '+marker+' on public.journals;delete from public.journals where id=\''+row+"';")
-print('Catalogue projection: actual migration lock, concurrent writer, read continuity and 5s lock-timeout rollback passed.')
+print('Catalogue projection/filter: actual migration locks, concurrent writers, read continuity and 5s lock-timeout rollback passed.')

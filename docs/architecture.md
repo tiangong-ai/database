@@ -9,7 +9,7 @@ whenToUse: "When deciding source ownership, schema scope or generated-path bound
 whenToUpdate: "When schema ownership, imported scope or consumer contracts change."
 checkPaths: [supabase/**, scripts/**, tests/sql/**, docs/source-inventory.json]
 lastReviewedAt: 2026-10-20
-lastReviewedCommit: 94477e1ab2fc877f7dba8f5ee92abeb12ec8be53
+lastReviewedCommit: 5cff89c50baf6d97cd2e31011889387dfc54e05a
 ---
 
 # Database architecture
@@ -206,13 +206,31 @@ RLS regression and denied direct-helper/table calls enforce this composition;
 private schema exposure or USAGE would invalidate the security boundary.
 
 Trigram search operates on stored normalized text. One/two-character searches
-use a stored-text scan; they retain exact semantics without a new minimum length.
+first use a bounded 1024-bit per-row negative filter, then the unchanged
+`strpos` predicate on stored text. All single characters and adjacent pairs set
+two fixed MD5-derived slots. This is an acceleration structure, not a security
+hash or a match verdict: collisions/saturation only increase residual work.
+Missing filter rows also fall back to the exact predicate. Query slots are
+computed once, and no minimum query length or substring semantics change.
+
+`private.kb_catalogue_journal_short_filter` has a UUID primary key, a 128-byte
+signature, RLS without policies, and no client grants. Owner-only triggers on
+the text projection maintain it in the source transaction, including identifier
+changes and transactional TRUNCATE. Its migration locks that projection before
+the backfill; a source writer waits at its existing projection trigger. Reads
+continue. The parallel-capable backfill only uses transaction-local planner
+settings and never changes the server configuration. No production compute or
+storage expansion is implied by this migration.
 The candidate-to-source join is a direct join over unique projection IDs, avoiding
 PostgreSQL's poor distinct-cardinality estimate for an opaque `IN` subquery.
 Narrow candidate and explicit hydration branches keep abstracts out of the bulk
 join; only selected page rows build the final JSON. Sort/count intermediates use
 UUIDs instead of full metadata bodies. Ordering remains update time, kind and UUID,
 which matches the existing typed `kind:uuid` key ordering for the supported kinds.
+Category groups and global metrics share one aggregation; page sorting carries
+only kind, identity, category and timestamp. Registered bodies remain materialized
+once for permission masking and explicit-link deduplication; the page-only
+hydration guarantee applies to legacy metadata.
 
 See [capacity qualification and release](catalogue-capacity.md) for migration
 locks, storage, regression scope and recovery limits.
