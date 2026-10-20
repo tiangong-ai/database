@@ -8,8 +8,8 @@ language: en
 whenToUse: "When reviewing or qualifying the Jobs timeout fix."
 whenToUpdate: "When Jobs query behavior, fixtures or measured evidence changes."
 checkPaths: [supabase/migrations/20261013091317_optimize_kb_admin_jobs_authorization.sql, tests/performance/kb_admin_jobs.sql, tests/sql/kb_admin_jobs_permissions_smoke.sql, tests/runtime/qualify_jobs_upgrade.py]
-lastReviewedAt: 2026-10-13
-lastReviewedCommit: f0bdc521cf147d4649430f25c69eda226315905d
+lastReviewedAt: 2026-10-20
+lastReviewedCommit: 984422600774bec939157076b9123d4fa07240a0
 ---
 
 # Jobs list timeout investigation
@@ -144,3 +144,21 @@ remains distinct from the synthetic benchmark; no production rows were copied.
 Rollback, if needed after an authorized deployment, is a separately reviewed new
 migration restoring the prior Jobs definition from `202605110001`; never rewrite
 applied migration history or run the legacy filename-ledger runner on production.
+
+## Production follow-up (#30, 2026-10-20)
+
+The prior optimization is deployed, but the real default Jobs request still
+times out. Read-only statistics show approximately 56,677 documents, 179,080
+jobs and five total active grants. The default body plan performs a Merge Join
+through random-UUID document/job indexes; the exact default query still exceeds
+an 8-second diagnostic cap. This is not evidence of missing deployment.
+
+The new forward correction materializes the identical document permission
+predicate first, then joins jobs. A production read-only candidate plan returned
+in 4.867s with sequential scans and a hash join. This is a measured SQL candidate,
+not a deployed RPC or application pass. The fixture is increased to 60k documents
+and 180k jobs; original SQL permissions/filter/sort/empty-page oracles remain.
+The function identity, execution attributes and service-role-only ACL are retained.
+No production maintenance, timeout change, worker operation or business write
+was performed. Paid Preview is declined; required hosted release evidence remains
+outstanding and must not be represented as passed.

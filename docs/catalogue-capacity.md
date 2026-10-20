@@ -9,7 +9,7 @@ whenToUse: "Before qualifying or releasing the Issue #25 catalogue capacity corr
 whenToUpdate: "When catalogue projection, performance gates or release evidence changes."
 checkPaths: [supabase/migrations/*kb_catalogue*.sql, tests/performance/catalogue_capacity.sql, tests/sql/kb_catalogue*smoke.sql]
 lastReviewedAt: 2026-10-20
-lastReviewedCommit: 626c3eeea29b030cb471c38c8a12cdf7fbab5ec3
+lastReviewedCommit: 984422600774bec939157076b9123d4fa07240a0
 ---
 
 # Catalogue browse capacity
@@ -138,3 +138,22 @@ cover the new pair, not only the legacy helper. Capacity adds an empty registry
 before 1k links and 8 KiB high-entropy document payloads in addition to descriptions.
 Keep the 8s request limit; record cold/warm, stale/fresh statistics and temporary I/O
 in the release evidence. Postgres restarts alone do not prove an empty OS cache.
+
+## Single-library journals deep pages (#30)
+
+The default library list in Next #109 is separate from the unified catalogue.
+Production journals has 1,391,739 rows and only 5,013 of 81,590 heap pages marked
+all-visible. An ID-only offset-990 plan performed 897 heap fetches; offset 99,990
+still exceeded 8 seconds without counting. Removing explicit NULL placement
+fixed the first page but did not fix random visibility checks on deep pages.
+
+The additive invoker `api.kb_journals_page_v1` shares one RLS-filtered materialized
+ID scan between exact count and UUID paging, then hydrates only the selected
+list rows. Ordinary-authenticated read-only SQL candidates measured 5.128s for
+page 10,000 and 5.268s for the final partial page. These plans used substantial
+sequential reads and temporary sorting; they are not constant-time, concurrency
+SLOs or hosted RPC acceptance. No count cache, replica, VACUUM, source rewrite,
+new index or timeout increase is introduced. Other field sorts, DOI lookup and
+source details keep their existing paths. Database deployment must precede the
+paired Next change; the user declined paid Preview and no production write is
+authorized by these diagnostic measurements.

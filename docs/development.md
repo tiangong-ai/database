@@ -9,7 +9,7 @@ whenToUse: "When exporting schema, authoring migrations or selecting a database 
 whenToUpdate: "When helper CLI contracts, dependencies or adoption steps change."
 checkPaths: [scripts/**, supabase/config.toml, .env.*.example]
 lastReviewedAt: 2026-10-20
-lastReviewedCommit: 626c3eeea29b030cb471c38c8a12cdf7fbab5ec3
+lastReviewedCommit: 984422600774bec939157076b9123d4fa07240a0
 ---
 
 # Development
@@ -209,3 +209,11 @@ Issue #28 is a new function-only migration after deployed PR #26. Never change
 the three deployed capacity/identifier migrations or repair their ledger. Use
 the existing full registered projection as an isolated equivalence oracle, while
 API queries use the new narrow-candidate/page pair. No production data is seeded.
+
+For database #30, replay both appended scan migrations before the matching Next
+PR #109 candidate. The Jobs upgrade probe restores the legacy function, applies
+the previous grant optimization and then the new document-scan correction. The
+new journals RPC must exist before the frontend switches its default page path;
+there is no fallback to the known slow query. The user declined paid hosted
+branches on 2026-10-20. Keep this candidate local/reviewable without triggering
+an automatic PR Preview; local validation does not waive hosted release gates.

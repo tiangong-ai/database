@@ -55,6 +55,20 @@ set local statement_timeout='8s';
 select set_config('request.jwt.claims',jsonb_build_object('sub',md5('catalogue-capacity-actor')::uuid,'role','authenticated')::text,true);
 set local role authenticated;
 \timing on
+-- Default library paging shares a narrow RLS identity scan for exact count.
+-- The uncommitted fixture has no all-visible pages, matching the failure risk.
+do $$ declare r jsonb; begin
+ r:=api.kb_journals_page_v1(10000,10,'desc');
+ assert (r->>'total')::bigint=1500000 and jsonb_array_length(r->'data')=10;
+end $$;
+do $$ declare r jsonb; begin
+ r:=api.kb_journals_page_v1(150000,10,'asc');
+ assert (r->>'total')::bigint=1500000 and jsonb_array_length(r->'data')=10;
+end $$;
+do $$ declare r jsonb; begin
+ r:=api.kb_journals_page_v1(150001,10,'desc');
+ assert (r->>'total')::bigint=1500000 and r->'data'='[]'::jsonb;
+end $$;
 do $$ declare r jsonb; begin
  r:=api.kb_catalogue_v1('{"page_size":1}');
  assert (r->>'total')::bigint=1550100,'Empty registry exact count';

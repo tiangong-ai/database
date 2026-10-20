@@ -9,7 +9,7 @@ whenToUse: "When deciding source ownership, schema scope or generated-path bound
 whenToUpdate: "When schema ownership, imported scope or consumer contracts change."
 checkPaths: [supabase/**, scripts/**, tests/sql/**, docs/source-inventory.json]
 lastReviewedAt: 2026-10-20
-lastReviewedCommit: 626c3eeea29b030cb471c38c8a12cdf7fbab5ec3
+lastReviewedCommit: 984422600774bec939157076b9123d4fa07240a0
 ---
 
 # Database architecture
@@ -207,3 +207,16 @@ Database #27 / Next #111 adds user-session `api.kb_catalogue_identifier_v1` for
 current-library normalized DOI and exact standard numbers. The sole public
 schema addition is a nonunique DOI expression index; existing indexes and Edge
 `meta_contains` remain unchanged. See [catalogue capacity](catalogue-capacity.md).
+
+## Default library and Jobs scan correction (#30)
+
+`api.kb_journals_page_v1(integer,integer,text)` is an authenticated-only stable
+SECURITY INVOKER RPC. Existing journals RLS filters a materialized ID set before
+both exact count and UUID pagination; only selected list fields are hydrated.
+It accepts page >= 1, page size 1..100 and asc/desc, returns data/total/page/pageSize,
+and preserves the exact total on an empty page. No actor, arbitrary search or
+field-sort argument is accepted. Next uses it only for its default ID sort.
+The forward Jobs migration materializes the original authorized document set
+(id, filename and collection path) before joining jobs. Both permission branches,
+including action grants on deleted documents, and every filter/order/count remain
+unchanged. No existing table/index/ACL, worker or timeout setting changes.

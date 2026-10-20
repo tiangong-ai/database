@@ -26,6 +26,7 @@ old = (repo / 'supabase/migrations/202605110001_kb_job_retry_backoff_dlq.sql').r
 start = old.index('create or replace function public.list_kb_admin_jobs(')
 old = old[start:old.index('\ndo $$', start)]
 migration = (repo / 'supabase/migrations/20261013091317_optimize_kb_admin_jobs_authorization.sql').read_text()
+scan_migration = (repo / 'supabase/migrations/20261020154538_optimize_kb_admin_jobs_document_scan.sql').read_text()
 contract = """select jsonb_build_object(
     'oid',oid, 'owner',proowner,'acl',proacl,'args',pg_get_function_arguments(oid),
     'returns',pg_get_function_result(oid),'security_definer',prosecdef,
@@ -37,6 +38,8 @@ try:
     before = sql(contract)
     sql((repo / 'tests/sql/kb_admin_jobs_permissions_smoke.sql').read_text())
     sql(migration)
+    sql((repo / 'tests/sql/kb_admin_jobs_permissions_smoke.sql').read_text())
+    sql(scan_migration)
     if before != sql(contract):
         raise SystemExit('Jobs upgrade changed identity, ACL, signature or execution attributes')
     print('Jobs prior-schema-to-head upgrade: identity/ACL/signature preserved; old role/filter/sort oracle passed')

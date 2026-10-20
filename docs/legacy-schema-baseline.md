@@ -9,7 +9,7 @@ whenToUse: "When reviewing the production-derived legacy baseline or running con
 whenToUpdate: "When capture scope, privacy guarantees, parity or business-path validation changes."
 checkPaths: [supabase/migrations/**, tests/schema/**, tests/consumers/**, docs/legacy-schema-inventory.json]
 lastReviewedAt: 2026-10-20
-lastReviewedCommit: 626c3eeea29b030cb471c38c8a12cdf7fbab5ec3
+lastReviewedCommit: 984422600774bec939157076b9123d4fa07240a0
 ---
 
 # Knowledge Base legacy schema baseline
@@ -193,3 +193,7 @@ schema addition is a nonunique DOI expression index; existing indexes and Edge
 Issue #28 adds two private, authenticated-only projection helpers and replaces
 two API bodies. Its catalogue fixture changes only those reviewed functions;
 all public relation, index, trigger, RLS and ACL expectations remain identical.
+
+Issue #30 changes only the existing Jobs body fingerprint in the public catalog
+and adds one invoker journals-page function to the additive API catalog. The
+legacy table, index, trigger, RLS, ACL and other function expectations are intact.
