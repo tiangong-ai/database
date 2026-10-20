@@ -51,6 +51,15 @@ do $$ declare expected uuid[]; actual uuid[]; begin
  where r->>'kind'='material' and r->>'title' like 'catalogue-oracle-material-%';
  assert actual=expected,'Material visibility agrees with canonical collection permission';
 end $$;
+-- The previous full projection is an independent output oracle for the new
+-- candidate/page split, including masked fields and linked-document states.
+do $$ declare expected jsonb; actual jsonb; begin
+ select jsonb_agg(r order by r->>'key') into expected from private.kb_catalogue_registered_v1() r;
+ select jsonb_agg(p.body order by p.body->>'key') into actual
+ from private.kb_catalogue_registered_keys_v1() k
+ cross join lateral private.kb_catalogue_registered_page_v1(k.kind,k.id) p(body);
+ assert actual=expected,'Narrow candidates plus page hydration preserve complete registered bodies';
+end $$;
 -- Permission changes must be visible on the next statement, with no cache TTL.
 delete from public.kb_group_members where group_id=md5('catalogue-oracle-group')::uuid;
 do $$ declare expected uuid[]; actual uuid[]; begin

@@ -9,7 +9,7 @@ whenToUse: "When deciding source ownership, schema scope or generated-path bound
 whenToUpdate: "When schema ownership, imported scope or consumer contracts change."
 checkPaths: [supabase/**, scripts/**, tests/sql/**, docs/source-inventory.json]
 lastReviewedAt: 2026-10-20
-lastReviewedCommit: 767623f9f3d894dfe9180cdc082235d57f9a3063
+lastReviewedCommit: 626c3eeea29b030cb471c38c8a12cdf7fbab5ec3
 ---
 
 # Database architecture
@@ -195,8 +195,9 @@ empty or absent `q` remains browsing. Next exposes an explicit unsupported-link
 state rather than silently ignoring an old query.
 
 Sort/count intermediates use typed identities and hydrate at most 50 legacy rows.
-Registered bodies remain materialized once for ACL masking and explicit-link
-suppression. This is not constant-time pagination; real-scale browsing still has
+Issue #28 replaces registered body materialization with narrow typed candidates
+for ACL masking and explicit-link suppression. Both browse and identifier RPCs
+hydrate complete registered metadata only for selected page identities. This is not constant-time pagination; real-scale browsing still has
 the unchanged 8-second gate. See [capacity qualification](catalogue-capacity.md).
 DOI/standard-number lookup is the separate Next #111 slice; cross-library,
 abstract and arbitrary-field search stays in Next #110 Backlog. Original Edge
