@@ -36,7 +36,7 @@ do $$ declare before_scan bigint; before_fetch bigint; before_index bigint; resu
  select seq_tup_read,idx_tup_fetch,idx_scan into before_scan,before_fetch,before_index from pg_stat_xact_user_tables where relid='public.journals'::regclass;
  result:=api.kb_catalogue_v1(jsonb_build_object('key','journals:'||md5('catalogue-capacity-1')::uuid));
  assert (result->>'total')::int=1 and result->'rows'->0->>'title'='Synthetic article 1', 'Exact detail';
- assert (select seq_tup_read=before_scan and idx_tup_fetch>before_fetch and idx_tup_fetch-before_fetch<=2 from pg_stat_xact_user_tables where relid='public.journals'::regclass), 'Detail must use bounded primary key lookups';
+ assert (select seq_tup_read=before_scan and idx_tup_fetch>before_fetch and idx_tup_fetch-before_fetch<=2 and idx_scan>before_index and idx_scan-before_index<=2 from pg_stat_xact_user_tables where relid='public.journals'::regclass), 'Detail must use bounded primary key lookups';
 end $$;
 do $$ declare result jsonb; begin
  result:=api.kb_catalogue_v1('{"key":"journals:00000000-0000-4000-8000-000000000001"}');
@@ -61,5 +61,21 @@ do $$ declare result jsonb; begin
  assert result->'groups'='[{"category":"journals","total":1,"associated":0,"ready":0}]'::jsonb, 'Search group count';
  assert result->'metrics'='{"associated":0,"ready":0,"missing":0,"unknown":1}'::jsonb, 'Search metric counts';
 end $$;
+-- In addition to PL/pgSQL's implicit cached statements above, exercise one
+-- explicit parameterized statement across different query shapes. Check the
+-- server counters rather than inferring generic-plan use from elapsed time.
+prepare catalogue_capacity(jsonb) as select api.kb_catalogue_v1($1)->>'total';
+execute catalogue_capacity('{}');
+execute catalogue_capacity('{}');
+execute catalogue_capacity('{"category":"esg"}');
+execute catalogue_capacity(jsonb_build_object('key','journals:'||md5('catalogue-capacity-1')::uuid));
+execute catalogue_capacity('{"key":"journals:00000000-0000-4000-8000-000000000001"}');
+execute catalogue_capacity('{"category":"journals","page":2,"page_size":50}');
+execute catalogue_capacity('{"category":"journals","page":10000,"page_size":50}');
+execute catalogue_capacity('{"category":"journals","q":"Synthetic article 499999"}');
+do $$ begin
+ assert (select generic_plans=8 and custom_plans=0 from pg_prepared_statements where name='catalogue_capacity'), 'Actual reused generic plans';
+end $$;
+deallocate catalogue_capacity;
 \timing off
 rollback;
