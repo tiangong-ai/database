@@ -44,7 +44,7 @@ end $$;
 reset role;
 -- The same bound applies to material pages and explicit legacy/document links.
 insert into public.journals(id,doi,title)
- select md5('hydration-legacy-'||i)::uuid,'10.000/hydration','fixture' from generate_series(1,120)i;
+ select md5('hydration-legacy-'||i)::uuid,'10.000/hydration-'||i,'fixture' from generate_series(1,120)i;
 insert into private.kb_resource_entries(id,collection_id,primary_source_binding_id,external_key,profile_json,metadata_mode,legacy_ref,source_metadata)
  select md5('hydration-entry-'||i)::uuid,md5('hydration-collection')::uuid,'hydration',i::text,
  '{"required_fields":["title"]}','legacy_ref',jsonb_build_object('table','journals','id',md5('hydration-legacy-'||i)::uuid),
