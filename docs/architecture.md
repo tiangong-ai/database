@@ -172,18 +172,47 @@ abstracts. Registered rows still enforce their original ACL/masking, and their
 complete visible legacy-reference set suppresses source duplicates **before**
 display filters. All stages remain one stable RPC snapshot.
 
-Exact counts and literal substring searches still scan applicable authorized
-records; this is not constant-time pagination. Page numbers remain compatible,
-including page 10000. The owned 500,000-row / 1,900-byte abstract fixture gates
-an 8-second statement budget for overview, empty category, existing/missing
-detail, next/deep pages and search. Transaction statistics additionally reject
-journal reads for an empty ESG query and sequential scans for keyed details.
-These synthetic local results do not establish production hardware capacity or
-arbitrary registered-document distributions. Future indexed search, cursors or
-summary views must preserve actor-scoped counts and deduplication semantics.
+Exact counts still scan applicable authorized identities; this is not constant-time
+pagination. Page numbers remain compatible, including page 10000. The earlier
+500,000-journal-only fixture missed registered authorization and broad-search
+costs. Issue #25 replaces it with the mixed qualification described below.
 
-A document-only reader does not inherit access to its parent collection: the
-projection masks collection ID/name and uses `other` unless collection read is
-granted. An active accessible document counts as registered file evidence even
-when the material candidate map is empty. Multiple independently registered
-entries in different collections remain separate catalogue records.
+### Catalogue capacity correction (#25)
+
+Registered projection resolves readable collections once and materializes the
+actor's direct document grants once. The unchanged canonical authorization
+helpers remain the equivalence oracle. Creator/owner/public visibility and
+collection/subtree/user/group read/manage grants are preserved; revoked and
+expired grants never qualify. Collection metadata is masked independently from
+document visibility. No cross-request permission cache is introduced.
+
+`private.kb_catalogue_journal_search` is a rebuildable search projection, never a
+metadata authority. Its normalized text exactly preserves the existing serialized
+journal metadata plus title substring semantics, including JSON keys, nulls,
+escapes and literal `%`/`_`. Only journals need this projection in the current
+production-sized workload; other categories retain their existing invoker reads.
+The typed immutable encoder takes only text/jsonb, avoiding timezone/enum-dependent
+index content. Two owner-only triggers synchronously maintain insert, relevant
+update, identifier update, delete and truncate in the source transaction. Failures
+abort the source write; there is no asynchronous stale-success window.
+
+The projection has RLS enabled with no policies or client table grants. Its
+private candidate helper validates an ordinary Auth session and is inaccessible
+through direct SQL name resolution or PostgREST (`private` has no USAGE/exposure).
+Only the existing, OID-bound invoker catalogue query consumes the intermediate
+IDs and joins `public.journals` under its original RLS **before** counts, ordering,
+pagination or hydration. The helper never limits candidates. A restrictive source
+RLS regression and denied direct-helper/table calls enforce this composition;
+private schema exposure or USAGE would invalidate the security boundary.
+
+Trigram search operates on stored normalized text. One/two-character searches
+use a stored-text scan; they retain exact semantics without a new minimum length.
+The candidate-to-source join is a direct join over unique projection IDs, avoiding
+PostgreSQL's poor distinct-cardinality estimate for an opaque `IN` subquery.
+Narrow candidate and explicit hydration branches keep abstracts out of the bulk
+join; only selected page rows build the final JSON. Sort/count intermediates use
+UUIDs instead of full metadata bodies. Ordering remains update time, kind and UUID,
+which matches the existing typed `kind:uuid` key ordering for the supported kinds.
+
+See [capacity qualification and release](catalogue-capacity.md) for migration
+locks, storage, regression scope and recovery limits.

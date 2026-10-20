@@ -193,3 +193,10 @@ activation; preserve the prior app image. An app rollback may leave the additive
 read functions installed. Do not remove them while any client uses them. A future
 removal migration must drop the API and dependent invoker helpers in dependency
 order after rollback verification, never mutate published migration history.
+
+Issue #25 adds a transaction-synchronized private journal search projection.
+Develop only on the owned disposable stack; production backfill and index creation
+require the maintenance checks in [catalogue capacity](catalogue-capacity.md).
+The backfill does not modify source rows or UUIDs. Never disable its triggers or
+repair its rows manually to force a passing query; qualify forward repairs and
+source-write rollback behavior instead.

@@ -9,7 +9,7 @@ whenToUse: "When reviewing the production-derived legacy baseline or running con
 whenToUpdate: "When capture scope, privacy guarantees, parity or business-path validation changes."
 checkPaths: [supabase/migrations/**, tests/schema/**, tests/consumers/**, docs/legacy-schema-inventory.json]
 lastReviewedAt: 2026-10-20
-lastReviewedCommit: cf137cb8a8b8105192b54cdfbe44ee96d7aede5c
+lastReviewedCommit: e702d268c1d859952f196e9c759e89658a70e228
 ---
 
 # Knowledge Base legacy schema baseline
@@ -178,3 +178,11 @@ authenticated schema USAGE and four new function grants expand the API surface.
 The separate six-resource metadata gateway (database #20) adds three authenticated
 RPCs with private per-type grants; existing S2 contracts, legacy tables and ACLs
 remain unchanged. See [metadata management](metadata-management.md).
+
+Issue #25 adds two synchronous search projection triggers to `public.journals`;
+only its `triggers` field changes in the current public fixture. All original
+columns, source data authority, IDs, ACLs, RLS and indexes remain unchanged.
+The projection table and three helper functions are in the separate additive
+catalogue fixture. The immutable prior-chain snapshot remains unchanged, and
+its delta test explicitly pins these two trigger additions. See
+[catalogue capacity](catalogue-capacity.md) for source-write/backfill gates.

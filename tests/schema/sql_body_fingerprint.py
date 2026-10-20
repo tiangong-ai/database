@@ -25,6 +25,7 @@ for signature, body in [
     ('private.kb_catalogue_row_v1(text,uuid,text,text,jsonb,timestamptz,jsonb)', "RETURN '{\"probe\":true}'::jsonb;"),
     ('private.kb_catalogue_rows_v1()', "BEGIN ATOMIC SELECT '{\"probe\":true}'::jsonb; END;"),
     ('private.kb_catalogue_legacy_v1(jsonb,boolean)', "BEGIN ATOMIC SELECT 'probe'::text,NULL::uuid,'other'::text,NULL::timestamptz,'probe'::text,'{}'::jsonb; END;"),
+    ('private.kb_catalogue_journal_text_v1(text,text,text,jsonb,text,text)', "RETURN 'fingerprint probe'::text;"),
     ('api.kb_catalogue_v1(jsonb)', "BEGIN ATOMIC SELECT '{\"probe\":true}'::jsonb; END;"),
 ]:
     definition = sql("select pg_get_functiondef('" + signature + "'::regprocedure);")
@@ -39,4 +40,4 @@ for signature, body in [
     changed = {name: [k for k in before[name] if before[name][k] != after[name][k]] for name in before if before[name] != after[name]}
     assert changed == {signature.split('(')[0]: ['body_md5']}, changed
 assert json.loads(sql(collector)) == baseline, 'Probe must leave catalog unchanged'
-print('Five SQL-standard body mutations detected; all changes rolled back.')
+print('Six SQL-standard body mutations detected; all changes rolled back.')

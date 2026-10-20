@@ -1,7 +1,7 @@
 version: 1
 layout: repo
 lastReviewedAt: 2026-10-20
-lastReviewedCommit: cf137cb8a8b8105192b54cdfbe44ee96d7aede5c
+lastReviewedCommit: e702d268c1d859952f196e9c759e89658a70e228
 repo:
   id: database
 routing:
@@ -226,3 +226,24 @@ rules:
       - path: docs/metadata-management.md
         mode: review_or_update
     reason: Six-resource writes require explicit identity, retry and lifecycle contracts.
+
+  - id: database-catalogue-capacity
+    scope: repo
+    repo: database
+    triggers:
+      - path: supabase/migrations/*_kb_catalogue*.sql
+        kind: catalogue-query
+      - path: tests/performance/catalogue_capacity.sql
+        kind: capacity-gate
+      - path: tests/sql/kb_catalogue*smoke.sql
+        kind: catalogue-boundary
+      - path: tests/upgrade/catalogue_search_after.sql
+        kind: projection-upgrade
+    requiredDocs:
+      - path: docs/catalogue-capacity.md
+        mode: review_or_update
+      - path: docs/architecture.md
+        mode: review_or_update
+      - path: docs/validation.md
+        mode: review_or_update
+    reason: Catalogue performance, source authority and private projection release gates must remain explicit.

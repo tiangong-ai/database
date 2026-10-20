@@ -209,16 +209,28 @@ metadata, key and worker permission suites. No hosted credentials are needed.
 
 ## Catalogue capacity and body integrity
 
-`tests/performance/catalogue_capacity.sql` seeds 500,000 synthetic journal rows
-with 1,900-byte abstracts in a rollback-only transaction. It checks real ordinary
-session counts, bounded hydration, deep pages and substring search under an
-8-second statement timeout with forced generic plans. Search and next/deep pages
-assert exact result identities/counts as well as elapsed-time bounds. Transaction table statistics prove unrelated-category
-pruning and primary-key detail access; a fast empty result alone is insufficient.
+`tests/performance/catalogue_capacity.sql` seeds 1,500,000 synthetic journals
+with 1,900-byte abstracts (10% varied high-entropy text), 60,000 registered
+documents and 1,000 explicit material/source/document links, in a rollback-only
+transaction. Creator, public, user collection, group subtree/manage and direct
+document grants leave exactly 9,900 documents denied. Each overview, category,
+existing/missing detail, next/deep page, selective/broad/one/two-character/literal
+search must finish within the unchanged 8-second statement timeout. Exact counts,
+identities, groups, states, deduplication and ten reused generic prepared calls
+are asserted. Table statistics pin unrelated-category pruning and bounded primary
+key detail access. No production rows or remote target are accepted.
+
+`kb_catalogue_permissions_smoke.sql` compares the batch result and collection mask
+against the unchanged canonical helpers across 240 synthetic documents, including
+expiry, revocation, group removal, misleading subtree prefixes, owner/creator,
+public and deleted states. `kb_catalogue_search_smoke.sql` compares the serialized
+substring oracle, source updates/deletes/truncate and rollback on projection
+failure, private access denial and restrictive source RLS. Existing real
+Auth/PostgREST catalogue tests run on clean replay and populated upgrade.
 
 The catalog collector hashes `pg_get_functiondef` for SQL-standard bodies, whose
 `prosrc` is empty; older string bodies retain their historical `prosrc` hashes.
-`tests/schema/sql_body_fingerprint.py` changes each of the five
+`tests/schema/sql_body_fingerprint.py` changes each of the six
 SQL-standard catalogue bodies in a rolled-back local transaction and requires
 exactly a body fingerprint difference. This gate runs after catalog parity, and
 the final read verifies that all mutations were rolled back.
