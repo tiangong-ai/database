@@ -34,7 +34,7 @@ SELECT jsonb_build_object(
   ) ORDER BY r.relname) FROM relations r),
   'functions',(SELECT jsonb_agg(jsonb_build_object('name',CASE WHEN n.nspname='public' THEN p.proname ELSE n.nspname||'.'||p.proname END,
     'arguments',pg_get_function_identity_arguments(p.oid),'full_arguments',pg_get_function_arguments(p.oid),'owner',pg_get_userbyid(p.proowner),'leakproof',p.proleakproof,'cost',p.procost,'rows',p.prorows,'returns',pg_get_function_result(p.oid),
-    'body_md5',md5(p.prosrc),'language',l.lanname,'security_definer',p.prosecdef,
+    'body_md5',md5(case when p.prosqlbody is not null then pg_get_functiondef(p.oid) else p.prosrc end),'language',l.lanname,'security_definer',p.prosecdef,
     'volatility',p.provolatile,'strict',p.proisstrict,'parallel',p.proparallel,'configuration',p.proconfig,
     'acl',(SELECT jsonb_agg(jsonb_build_object('grantee',CASE WHEN x.grantee=0 THEN 'PUBLIC' ELSE pg_get_userbyid(x.grantee) END,
       'privilege',x.privilege_type,'grantable',x.is_grantable) ORDER BY x.grantee=0,pg_get_userbyid(x.grantee),x.privilege_type)

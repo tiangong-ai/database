@@ -168,6 +168,7 @@ if [[ -n "${DATABASE_TEST_CATALOG_OUTPUT:-}" ]]; then
   cp "$test_root/legacy-catalog.json" "$DATABASE_TEST_CATALOG_OUTPUT"
 fi
 "$python_bin" "$repo_root/tests/schema/check_catalog.py" --actual "$test_root/legacy-catalog.json"
+"$python_bin" "$repo_root/tests/schema/sql_body_fingerprint.py" "$db_container"
 
 SUPABASE_CLI="$supabase_bin" "$python_bin" "$repo_root/tests/runtime/qualify_toolchain.py" "$repo_root" "$test_root"
 # Upgrade from the exact prior chain with existing rows; never apply to a linked project.

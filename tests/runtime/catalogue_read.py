@@ -108,6 +108,12 @@ try:
     assert linked['document_id']==did and linked['metadata_state']=='complete'
     assert catalogue({'key':'material:'+eid},sessions[1])['total']==0
     assert catalogue({'collection':cid})['total']==1
+    assert catalogue({'q':marker+' journals'})['total']==0, 'filtered-out registered row still suppresses its source'
+    assert catalogue({'key':'journals:'+journal})['total']==0, 'source detail stays suppressed'
+    sql(f"update public.kb_collections set metadata_schema_json='{{\"catalogue_category\":\"reports\"}}' where id='{cid}';")
+    assert catalogue({'category':'journals','q':marker})['total']==0, 'category filter cannot resurrect a suppressed source'
+    assert catalogue({'category':'reports','key':'material:'+eid})['total']==1
+    sql(f"update public.kb_collections set metadata_schema_json='{{\"catalogue_category\":\"journals\"}}' where id='{cid}';")
     assert catalogue({'state':'ready','q':marker})['total']==1
     assert catalogue({'state':'associated','q':marker})['total']==1
     assert catalogue({'state':'missing','q':marker})['total']==0
@@ -126,7 +132,7 @@ try:
     assert catalogue({'collection':hidden_cid})['total']==0
     sql(f"delete from public.kb_grants where resource_id='{hidden_doc}';")
     checks.append('seven types; Green Deal explicit read grant; cross-collection isolation; explicit-link dedupe; stable pages and count parity; independent metadata/file/processing states')
-    for query in ({'page_size':51},{'page':0},{'page':1.2},{'page':10**20},{'category':'invented'},{'state':'invented'},{'q':'x'*201},{'key':'invalid'},{'collection':'invalid'},{'actor_id':actor},[],None):
+    for query in ({'page_size':51},{'page':0},{'page':1.2},{'page':10**20},{'category':'invented'},{'state':'invented'},{'q':'x'*201},{'key':'invalid'},{'key':'journals:'+'-'*36},{'collection':'invalid'},{'actor_id':actor},[],None):
         expect(rpc('kb_catalogue_v1',{'p_query':query},sessions[0]),400,'invalid query')
     expect(rpc('kb_catalogue_v1',{},anon),401,'anonymous denied')
     expect(rpc('kb_catalogue_v1',{},service),403,'service role denied')

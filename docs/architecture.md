@@ -163,10 +163,24 @@ filters share the same permission-filtered snapshot. Pages sort by update time
 and key; totals cover the filtered set rather than the current page. Invalid
 queries fail, and unavailable results must never be presented as zeros.
 
-This aggregate performs exact scans across authorized source records. Production
-capacity/latency validation is a release prerequisite, not established by small
-synthetic fixtures. Future summaries or materialized views must preserve this
-same actor scope and count contract.
+The forward capacity correction uses query-aware legacy candidates: source category,
+collection, state and detail-key conditions are applied before JSON projection.
+Keyed and unkeyed branches are separate so prepared generic plans retain primary
+key lookup. Counts and ordering use narrow typed fields; only the selected page
+(at most 50) hydrates full metadata. Empty-search requests do not stringify
+abstracts. Registered rows still enforce their original ACL/masking, and their
+complete visible legacy-reference set suppresses source duplicates **before**
+display filters. All stages remain one stable RPC snapshot.
+
+Exact counts and literal substring searches still scan applicable authorized
+records; this is not constant-time pagination. Page numbers remain compatible,
+including page 10000. The owned 500,000-row / 1,900-byte abstract fixture gates
+an 8-second statement budget for overview, empty category, existing/missing
+detail, next/deep pages and search. Transaction statistics additionally reject
+journal reads for an empty ESG query and sequential scans for keyed details.
+These synthetic local results do not establish production hardware capacity or
+arbitrary registered-document distributions. Future indexed search, cursors or
+summary views must preserve actor-scoped counts and deduplication semantics.
 
 A document-only reader does not inherit access to its parent collection: the
 projection masks collection ID/name and uses `other` unless collection read is
