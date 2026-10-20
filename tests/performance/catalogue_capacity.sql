@@ -97,6 +97,9 @@ do $$ declare before_scan bigint; before_fetch bigint; payload bigint; begin
   assert payload>0,'Complete linked material body';
  end loop;
  assert (select seq_tup_read=before_scan and idx_tup_fetch-before_fetch between 100 and 200 from pg_stat_xact_user_tables where relid='public.kb_documents'::regclass),'Page hydration must use bounded document primary-key probes, never repeated full scans';
+ raise notice 'PAGE_PROBE calls=100 document_seq_tup_delta=% document_idx_fetch_delta=%',
+  (select seq_tup_read-before_scan from pg_stat_xact_user_tables where relid='public.kb_documents'::regclass),
+  (select idx_tup_fetch-before_fetch from pg_stat_xact_user_tables where relid='public.kb_documents'::regclass);
 end $$;
 -- Exercise parameter-independent plans used by reused PostgREST statements.
 set local plan_cache_mode=force_generic_plan;
