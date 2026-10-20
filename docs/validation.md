@@ -9,7 +9,7 @@ whenToUse: "Before submitting or integrating database changes."
 whenToUpdate: "When test commands, qualification scope or CI changes."
 checkPaths: [scripts/**, tests/**, .github/workflows/**, .docpact/**]
 lastReviewedAt: 2026-10-20
-lastReviewedCommit: 767623f9f3d894dfe9180cdc082235d57f9a3063
+lastReviewedCommit: 626c3eeea29b030cb471c38c8a12cdf7fbab5ec3
 ---
 
 # Validation
@@ -202,7 +202,7 @@ collection isolation, three-source explicit-link deduplication, deterministic
 pages, count/filter parity, unknown versus missing file state, status transitions,
 input bounds, anonymous/service-role denial and immediate grant revocation.
 `catalogue_boundary.sql` pins ownership, search paths, function execution and
-absence of private schema USAGE. The additive catalogue fixture pins ten catalogue
+absence of private schema USAGE. The additive catalogue fixture pins twelve catalogue
 functions without replacing existing objects. `scripts/test-database.sh` runs
 the HTTP checks on clean replay and upgrade, alongside the existing resource,
 metadata, key and worker permission suites. No hosted credentials are needed.
@@ -244,3 +244,10 @@ runner exercises the new RPC with two actors and anon/service denial. Capacity
 checks retain the browse assertions, then add 50k standards and exact/absent DOI
 lookups, no journal sequential scan, three reused generic identifier calls and
 the added btree size/build time. No production credentials or rows are used.
+
+Issue #28 adds `kb_catalogue_hydration_smoke.sql`: rolled-back row-constructor
+instrumentation proves full JSON is assembled only for selected browse/identifier
+rows. The canonical-permission suite also compares complete new page bodies with
+the prior projection. Capacity covers both zero entries/links and 1k links, with
+60k high-entropy 8 KiB document payloads. Production acceptance remains a separate
+ordinary-session gate; isolated speed alone does not prove hosted performance.

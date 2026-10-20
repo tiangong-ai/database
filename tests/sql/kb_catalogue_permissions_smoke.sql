@@ -51,6 +51,34 @@ do $$ declare expected uuid[]; actual uuid[]; begin
  where r->>'kind'='material' and r->>'title' like 'catalogue-oracle-material-%';
  assert actual=expected,'Material visibility agrees with canonical collection permission';
 end $$;
+-- The previous full projection is an independent output oracle for the new
+-- candidate/page split, including masked fields and linked-document states.
+do $$ declare expected jsonb; actual jsonb; begin
+ select jsonb_agg(r order by r->>'key') into expected from private.kb_catalogue_registered_v1() r;
+ select jsonb_agg(p.body order by p.body->>'key') into actual
+ from private.kb_catalogue_registered_keys_v1() k
+ cross join lateral private.kb_catalogue_registered_page_v1(k.kind,k.id) p(body);
+ assert actual=expected,'Narrow candidates plus page hydration preserve complete registered bodies';
+end $$;
+-- Compare every registered field with active links, including a hidden entry
+-- linked to an otherwise visible document. Roll back these fixtures before the
+-- independent canonical permission/revocation assertions below.
+savepoint linked_oracle;
+insert into public.journals(id,doi,title) values(md5('linked-oracle-source')::uuid,'10.000/linked-oracle','linked source');
+update private.kb_resource_entries set metadata_mode='legacy_ref',legacy_ref=jsonb_build_object('table','journals','id',md5('linked-oracle-source')::uuid)
+ where id=md5('catalogue-oracle-entry-1')::uuid;
+insert into private.kb_resource_document_links(entry_id,document_id,content_revision,active,publish_state,approved_revision,candidate_json,metadata_snapshot,effective_metadata_revision)
+ values(md5('catalogue-oracle-entry-1')::uuid,md5('catalogue-oracle-doc-33')::uuid,1,true,'published',1,'{}','{}',1),
+ (md5('catalogue-oracle-entry-4')::uuid,md5('catalogue-oracle-doc-44')::uuid,1,true,'published',1,'{}','{}',1);
+do $$ declare expected jsonb; actual jsonb; begin
+ select jsonb_agg(r order by r->>'key') into expected from private.kb_catalogue_registered_v1() r;
+ select jsonb_agg(p.body order by p.body->>'key') into actual
+ from private.kb_catalogue_registered_keys_v1() k
+ cross join lateral private.kb_catalogue_registered_page_v1(k.kind,k.id) p(body);
+ assert actual=expected,'Complete linked material/document JSON agrees with prior projection, including hidden material fallback';
+ assert exists(select from jsonb_array_elements(actual) r where r->>'id'=md5('catalogue-oracle-doc-44')::uuid::text),'Hidden linked entry cannot suppress visible document';
+end $$;
+rollback to savepoint linked_oracle;
 -- Permission changes must be visible on the next statement, with no cache TTL.
 delete from public.kb_group_members where group_id=md5('catalogue-oracle-group')::uuid;
 do $$ declare expected uuid[]; actual uuid[]; begin

@@ -9,7 +9,7 @@ whenToUse: "When exporting schema, authoring migrations or selecting a database 
 whenToUpdate: "When helper CLI contracts, dependencies or adoption steps change."
 checkPaths: [scripts/**, supabase/config.toml, .env.*.example]
 lastReviewedAt: 2026-10-20
-lastReviewedCommit: 767623f9f3d894dfe9180cdc082235d57f9a3063
+lastReviewedCommit: 626c3eeea29b030cb471c38c8a12cdf7fbab5ec3
 ---
 
 # Development
@@ -204,3 +204,8 @@ Database #27 / Next #111 adds user-session `api.kb_catalogue_identifier_v1` for
 current-library normalized DOI and exact standard numbers. The sole public
 schema addition is a nonunique DOI expression index; existing indexes and Edge
 `meta_contains` remain unchanged. See [catalogue capacity](catalogue-capacity.md).
+
+Issue #28 is a new function-only migration after deployed PR #26. Never change
+the three deployed capacity/identifier migrations or repair their ledger. Use
+the existing full registered projection as an isolated equivalence oracle, while
+API queries use the new narrow-candidate/page pair. No production data is seeded.

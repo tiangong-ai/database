@@ -9,7 +9,7 @@ whenToUse: "When reviewing the production-derived legacy baseline or running con
 whenToUpdate: "When capture scope, privacy guarantees, parity or business-path validation changes."
 checkPaths: [supabase/migrations/**, tests/schema/**, tests/consumers/**, docs/legacy-schema-inventory.json]
 lastReviewedAt: 2026-10-20
-lastReviewedCommit: 5cff89c50baf6d97cd2e31011889387dfc54e05a
+lastReviewedCommit: 626c3eeea29b030cb471c38c8a12cdf7fbab5ec3
 ---
 
 # Knowledge Base legacy schema baseline
@@ -189,3 +189,7 @@ Database #27 / Next #111 adds user-session `api.kb_catalogue_identifier_v1` for
 current-library normalized DOI and exact standard numbers. The sole public
 schema addition is a nonunique DOI expression index; existing indexes and Edge
 `meta_contains` remain unchanged. See [catalogue capacity](catalogue-capacity.md).
+
+Issue #28 adds two private, authenticated-only projection helpers and replaces
+two API bodies. Its catalogue fixture changes only those reviewed functions;
+all public relation, index, trigger, RLS and ACL expectations remain identical.

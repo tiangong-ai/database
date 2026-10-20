@@ -9,7 +9,7 @@ whenToUse: "Before qualifying or releasing the Issue #25 catalogue capacity corr
 whenToUpdate: "When catalogue projection, performance gates or release evidence changes."
 checkPaths: [supabase/migrations/*kb_catalogue*.sql, tests/performance/catalogue_capacity.sql, tests/sql/kb_catalogue*smoke.sql]
 lastReviewedAt: 2026-10-20
-lastReviewedCommit: 767623f9f3d894dfe9180cdc082235d57f9a3063
+lastReviewedCommit: 626c3eeea29b030cb471c38c8a12cdf7fbab5ec3
 ---
 
 # Catalogue browse capacity
@@ -21,9 +21,10 @@ abstract and arbitrary metadata substring search until usage requirements exist.
 
 ## Current implementation and migration boundary
 
-Production main e702d268 includes 20261019154333 and 20261020032337; these bytes
-remain immutable. PR #26 retains 20261020053020 registered ACL batching and narrow
-page keys. The forward browse validator rejects nonempty q with 22023 and
+Production main 626c3ee includes PR #26 and its three capacity/browse/identifier
+migrations; all deployed bytes remain immutable. Issue #28 appends a new
+function-only correction after the failed production performance acceptance.
+PR #26 supplies registered ACL batching and narrow legacy page keys. The forward browse validator rejects nonempty q with 22023 and
 CATALOGUE_SEARCH_UNSUPPORTED; absent/empty q retains browsing. Old Next URLs show
 an explicit unsupported message and a usable browse link. No service fallback.
 
@@ -49,16 +50,19 @@ chain; never repair a persistent ledger or assume it matches removed files.
 
 ## Release and recovery
 
-Current authorization is development only: no disk expansion, merge or deployment.
-142 keeps its existing service, 148 files remain, production workers stay off.
-A future authorized window must recheck backup/free space, pending migrations,
+PR #26 merged as 626c3ee on 2026-10-20 and its three migrations deployed.
+Production ordinary-session overview then failed with 57014 at about 8.4s;
+Next #109 and 142 activation were stopped. Issue #28 must pass production
+queries before the user-authorized paired release can continue. No disk expansion
+is authorized; 148 files remain and production workers stay off.
+The authorized window must recheck backup/free space, pending migrations,
 API exposure and ordinary-session reads, then activate the paired Next version.
 If database qualification fails, do not activate Next. If Next activation fails,
 restore its previous immutable image/configuration. Never change source UUIDs,
 PDF filenames, permissions, or historical migration ledger as recovery.
 The unchanged Edge meta_contains functions and existing indexes remain outside
-this change. Main currently still exposes old q until a future authorized release;
-local/Preview success does not claim a production behavior change.
+this change. Production rejects nonempty q after #26. Local/Preview success does not
+claim production performance acceptance.
 
 ## Identifier lookup (database #27 / Next #111)
 
@@ -112,3 +116,25 @@ window. A different production DOI width/distribution may change index cost.
 The capacity test times next/deep-page RPCs separately from independent expected
 identity scans. Each RPC retains its 8-second statement timeout; the reference
 scans use a separate 30-second test-only budget. No production timeout changes.
+
+## Registered narrow candidates (#28)
+
+The deployed full registered projection materialized roughly 200 MiB of temporary
+writes for about 51k visible documents and took about 5.06s alone. The forward
+fix keeps typed identities, permission/masking decisions, association keys and
+state fields in `private.kb_catalogue_registered_keys_v1`. It carries no document
+metadata JSON or filename into counts/sorts. Identifier requests extract only the
+requested metadata field in the matching category; browse requests do not read it.
+`private.kb_catalogue_registered_page_v1` independently checks the actor/ACL and
+reads full metadata for the selected identity only. The prior full projection
+remains as a compatibility function and regression oracle, not the API count path.
+No new table, index, data rewrite, timeout increase or source identifier change.
+
+The hydration regression instruments the existing row constructor inside a
+rollback-only test: 120 wide document candidates must yield exactly one constructed
+body for page_size=1, for both browse and DOI requests. The deployed implementation
+fails that assertion. Canonical permission and complete JSON equivalence tests
+cover the new pair, not only the legacy helper. Capacity adds an empty registry
+before 1k links and 8 KiB high-entropy document payloads in addition to descriptions.
+Keep the 8s request limit; record cold/warm, stale/fresh statistics and temporary I/O
+in the release evidence. Postgres restarts alone do not prove an empty OS cache.
