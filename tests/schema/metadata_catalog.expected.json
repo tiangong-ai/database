@@ -392,6 +392,37 @@
       ],
       "full_arguments": "p_resource text, p_query jsonb DEFAULT '{}'::jsonb",
       "security_definer": true
+    },
+    {
+      "acl": [
+        {
+          "grantee": "authenticated",
+          "grantable": false,
+          "privilege": "EXECUTE"
+        },
+        {
+          "grantee": "postgres",
+          "grantable": false,
+          "privilege": "EXECUTE"
+        }
+      ],
+      "cost": 100,
+      "name": "api.kb_metadata_read_v1",
+      "rows": 0,
+      "owner": "postgres",
+      "strict": false,
+      "returns": "jsonb",
+      "body_md5": "7215d6eecd5ce7e1cbf4965bd23cee6a",
+      "language": "plpgsql",
+      "parallel": "u",
+      "arguments": "p_resource text, p_query jsonb, p_count_only boolean",
+      "leakproof": false,
+      "volatility": "s",
+      "configuration": [
+        "search_path=pg_catalog"
+      ],
+      "full_arguments": "p_resource text, p_query jsonb DEFAULT '{}'::jsonb, p_count_only boolean DEFAULT false",
+      "security_definer": true
     }
   ]
 }

@@ -9,7 +9,7 @@ whenToUse: "When deciding source ownership, schema scope or generated-path bound
 whenToUpdate: "When schema ownership, imported scope or consumer contracts change."
 checkPaths: [supabase/**, scripts/**, tests/sql/**, docs/source-inventory.json]
 lastReviewedAt: 2026-10-21
-lastReviewedCommit: 890d2c9760476a2e37970b74d99e995b992fe3ac
+lastReviewedCommit: 5fd64c0e8aadcd3bd48086ac4a95f586176ea237
 ---
 
 # Database architecture
@@ -224,3 +224,9 @@ unchanged. No existing table/index/ACL, worker or timeout setting changes.
 The scan follow-up also applies an explicit Jobs document_id filter before
 materialization, preserving indexed narrow requests. Other job filters remain
 in their original scope; it notifies PostgREST after adding the journals RPC.
+
+
+The additive database #32 page/count RPC contract and ordinary/deep-page
+performance bounds are documented in `docs/catalogue-capacity.md`, Split library
+reads. Qualification includes caller RLS, editor grant revocation, snapshot
+versions, real Auth/PostgREST, exact catalog additions and populated upgrades.

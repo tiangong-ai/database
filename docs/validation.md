@@ -9,7 +9,7 @@ whenToUse: "Before submitting or integrating database changes."
 whenToUpdate: "When test commands, qualification scope or CI changes."
 checkPaths: [scripts/**, tests/**, .github/workflows/**, .docpact/**]
 lastReviewedAt: 2026-10-21
-lastReviewedCommit: 890d2c9760476a2e37970b74d99e995b992fe3ac
+lastReviewedCommit: 5fd64c0e8aadcd3bd48086ac4a95f586176ea237
 ---
 
 # Validation
@@ -273,3 +273,9 @@ worker filtering. Upgrade qualification reapplies all three correction files.
 
 The narrow Jobs buffer gate also forces a generic plan; both document and job
 source branches must retain index probes, not merely pass on a custom first call.
+
+
+The additive database #32 page/count RPC contract and ordinary/deep-page
+performance bounds are documented in `docs/catalogue-capacity.md`, Split library
+reads. Qualification includes caller RLS, editor grant revocation, snapshot
+versions, real Auth/PostgREST, exact catalog additions and populated upgrades.

@@ -55,6 +55,25 @@ set local statement_timeout='8s';
 select set_config('request.jwt.claims',jsonb_build_object('sub',md5('catalogue-capacity-actor')::uuid,'role','authenticated')::text,true);
 set local role authenticated;
 \timing on
+-- Ordinary page-only requests must not scan/count the 1.5m-row library.
+set local statement_timeout='1s';
+do $$ declare r jsonb; direction text; p integer; begin
+ foreach direction in array array['asc','desc'] loop
+  for p in 1..2 loop
+   r:=api.kb_library_read_v1('journals',jsonb_build_object('page',p,'dir',direction));
+   assert jsonb_array_length(r->'data')=10 and (r->>'hasMore')::boolean and not r ? 'total';
+  end loop;
+ end loop;
+end $$;
+set local statement_timeout='8s';
+do $$ declare r jsonb; begin
+ r:=api.kb_library_read_v1('journals','{}',true);
+ assert (r->>'total')::bigint=1500000;
+ r:=api.kb_library_read_v1('journals','{"page":10000,"dir":"desc"}');
+ assert jsonb_array_length(r->'data')=10 and (r->>'hasMore')::boolean;
+ r:=api.kb_library_read_v1('journals','{"page":150000,"dir":"asc"}');
+ assert jsonb_array_length(r->'data')=10 and not (r->>'hasMore')::boolean;
+end $$;
 -- Default library paging shares a narrow RLS identity scan for exact count.
 -- The uncommitted fixture has no all-visible pages, matching the failure risk.
 do $$ declare r jsonb; begin

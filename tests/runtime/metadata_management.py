@@ -104,6 +104,16 @@ try:
         assert context(resource)['canWrite']
         listed=expect(rpc('kb_metadata_list_v1',{'p_resource':resource,'p_query':{'q':marker}},editor),200,'editor list '+resource)
         assert row in [r['values']['id'] for r in listed['records']]
+        page=expect(rpc('kb_library_read_v1',{'p_resource':resource,'p_query':{'q':marker}},editor),200,'split editor page '+resource)
+        count=expect(rpc('kb_library_read_v1',{'p_resource':resource,'p_query':{'q':marker},'p_count_only':True},editor),200,'split editor count '+resource)
+        assert 'total' not in page and page['records']==listed['records'] and count['total']==listed['total']
+        assert page['capabilities']=={'actorId':owner,'canWrite':True} and count['capabilities']==page['capabilities']
+        expect(rpc('kb_metadata_read_v1',{'p_resource':resource},read_session),403,'reader cannot elevate split helper')
+        for forbidden in (anon,service):
+            assert rpc('kb_library_read_v1',{'p_resource':resource},forbidden)[0] in (401,403)
+        ordinary=expect(rpc('kb_library_read_v1',{'p_resource':resource},read_session),200,'split reader '+resource)
+        assert not ordinary['capabilities']['canWrite'] and 'records' not in ordinary
+
         expect(rpc('kb_metadata_list_v1',{'p_resource':resource},read_session),403,'reader cannot elevate list')
         data=snapshot(resource,row); assert data['values'][title]==marker and data['version']==create['recordVersion']
         assert expect(command(resource,rid=rid),200,'replay')['id']==row
