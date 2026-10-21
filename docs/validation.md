@@ -287,3 +287,14 @@ RLS and nullable title values, plus the production discrepancy: legacy/heap
 return the same exact count with live authorization. Synthetic tests do not
 recreate the production index fault; real-data read-only parity remains a
 release gate. No production index rebuild or data mutation is part of the test.
+
+
+Library session qualification (#36) covers ordinary/refresh tokens, active and
+expired bans, deleted users, local sign-out with an unexpired JWT, and foreign
+session ownership through actual Auth/PostgREST. Local signed-token cases cover
+expired JWTs and missing/malformed/absent session IDs. SQL rollback tests pin
+page/count denial, unexposed private/Auth privileges, and invoker dispatch.
+Existing library reader/editor/RLS, exact counts, deep pages and capacity gates
+now create synthetic Auth session rows before switching role. The catalog adds
+only two session helpers and the dispatcher body; hosted Preview catalog and
+HTTP qualification remain prerequisites to main deployment and browser rollout.

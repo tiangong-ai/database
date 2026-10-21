@@ -52,7 +52,8 @@ analyze public.kb_grants;
 analyze private.kb_resource_entries;
 analyze private.kb_resource_document_links;
 set local statement_timeout='8s';
-select set_config('request.jwt.claims',jsonb_build_object('sub',md5('catalogue-capacity-actor')::uuid,'role','authenticated')::text,true);
+insert into auth.sessions(id,user_id) values(md5('catalogue-capacity-actor-session')::uuid,md5('catalogue-capacity-actor')::uuid) on conflict do nothing;
+select set_config('request.jwt.claims',jsonb_build_object('sub',md5('catalogue-capacity-actor')::uuid,'role','authenticated','session_id',md5('catalogue-capacity-actor-session')::uuid)::text,true);
 set local role authenticated;
 \timing on
 -- Ordinary page-only requests must not scan/count the 1.5m-row library.
@@ -120,7 +121,7 @@ select pg_relation_size('public.journals_catalogue_doi_exact_idx') as identifier
 set local statement_timeout='8s';
 -- Bounded body loading must survive repeated PL/pgSQL generic plans. This
 -- tests document and linked-material paths separately from the count scan.
-select set_config('request.jwt.claims',jsonb_build_object('sub',md5('catalogue-capacity-actor')::uuid,'role','authenticated')::text,true);
+select set_config('request.jwt.claims',jsonb_build_object('sub',md5('catalogue-capacity-actor')::uuid,'role','authenticated','session_id',md5('catalogue-capacity-actor-session')::uuid)::text,true);
 do $$ declare before_scan bigint; before_fetch bigint; payload bigint; begin
  select seq_tup_read,idx_tup_fetch into before_scan,before_fetch from pg_stat_xact_user_tables where relid='public.kb_documents'::regclass;
  for i in 1..50 loop
@@ -137,7 +138,7 @@ end $$;
 -- Exercise parameter-independent plans used by reused PostgREST statements.
 set local plan_cache_mode=force_generic_plan;
 set local role authenticated;
-select set_config('request.jwt.claims',jsonb_build_object('sub',md5('catalogue-capacity-actor')::uuid,'role','authenticated')::text,true);
+select set_config('request.jwt.claims',jsonb_build_object('sub',md5('catalogue-capacity-actor')::uuid,'role','authenticated','session_id',md5('catalogue-capacity-actor-session')::uuid)::text,true);
 \timing on
 -- Each statement is independently bounded, including the deepest allowed page.
 do $$ declare result jsonb; begin

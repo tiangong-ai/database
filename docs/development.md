@@ -226,3 +226,11 @@ The additive database #32 page/count RPC contract and ordinary/deep-page
 performance bounds are documented in `docs/catalogue-capacity.md`, Split library
 reads. Qualification includes caller RLS, editor grant revocation, snapshot
 versions, real Auth/PostgREST, exact catalog additions and populated upgrades.
+
+
+Database #36 adds `tests/runtime/library_session.py` to both clean and populated
+upgrade gates. It uses only the gate-owned local stack, real Auth tokens and
+synthetic users, cleans those identities, and compares account/session denial
+with Auth. Run the standard full gate; use its private consumer target JSON for
+focused iteration. Hosted qualification uses an owned temporary KB Preview and
+synthetic identities, never a production account for ban/revoke/delete tests.

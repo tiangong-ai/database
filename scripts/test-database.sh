@@ -156,6 +156,7 @@ SUPABASE_CLI="$supabase_bin" "$python_bin" "$repo_root/tests/runtime/legacy_perm
 SUPABASE_CLI="$supabase_bin" "$python_bin" "$repo_root/tests/runtime/api_key_management.py" "$db_container" "$test_root"
 SUPABASE_CLI="$supabase_bin" "$python_bin" "$repo_root/tests/runtime/metadata_management.py" "$db_container" "$test_root"
 SUPABASE_CLI="$supabase_bin" "$python_bin" "$repo_root/tests/runtime/catalogue_read.py" "$db_container" "$test_root"
+SUPABASE_CLI="$supabase_bin" "$python_bin" "$repo_root/tests/runtime/library_session.py" "$db_container" "$test_root"
 for sql_file in "$repo_root"/tests/performance/*.sql; do
   [[ -f "$sql_file" ]] || continue
   echo "Running ${sql_file##*/}"
@@ -234,4 +235,5 @@ SUPABASE_CLI="$supabase_bin" "$python_bin" "$repo_root/tests/runtime/legacy_perm
 SUPABASE_CLI="$supabase_bin" "$python_bin" "$repo_root/tests/runtime/api_key_management.py" "$db_container" "$test_root"
 SUPABASE_CLI="$supabase_bin" "$python_bin" "$repo_root/tests/runtime/metadata_management.py" "$db_container" "$test_root"
 SUPABASE_CLI="$supabase_bin" "$python_bin" "$repo_root/tests/runtime/catalogue_read.py" "$db_container" "$test_root"
+SUPABASE_CLI="$supabase_bin" "$python_bin" "$repo_root/tests/runtime/library_session.py" "$db_container" "$test_root"
 echo "Local migration replay, ${#smoke_tests[@]} SQL smoke tests, resource concurrency, PostgREST boundary and populated prior-schema upgrade passed."
