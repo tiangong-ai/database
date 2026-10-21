@@ -412,7 +412,7 @@
       "owner": "postgres",
       "strict": false,
       "returns": "jsonb",
-      "body_md5": "7215d6eecd5ce7e1cbf4965bd23cee6a",
+      "body_md5": "b6e467f2a617d402fb01108b918d1982",
       "language": "plpgsql",
       "parallel": "u",
       "arguments": "p_resource text, p_query jsonb, p_count_only boolean",
