@@ -423,7 +423,7 @@
       "owner": "postgres",
       "strict": false,
       "returns": "jsonb",
-      "body_md5": "93ec8f4d9ac4992218fce3403d5f3cc0",
+      "body_md5": "26e6f68b37d9c3bba4bf7fe3bf084710",
       "language": "plpgsql",
       "parallel": "u",
       "arguments": "p_resource text, p_query jsonb, p_count_only boolean",
@@ -433,6 +433,68 @@
         "search_path=pg_catalog"
       ],
       "full_arguments": "p_resource text, p_query jsonb DEFAULT '{}'::jsonb, p_count_only boolean DEFAULT false",
+      "security_definer": false
+    },
+    {
+      "acl": [
+        {
+          "grantee": "authenticated",
+          "grantable": false,
+          "privilege": "EXECUTE"
+        },
+        {
+          "grantee": "postgres",
+          "grantable": false,
+          "privilege": "EXECUTE"
+        }
+      ],
+      "cost": 100,
+      "name": "private.kb_library_session_v1",
+      "rows": 0,
+      "owner": "postgres",
+      "strict": false,
+      "returns": "uuid",
+      "body_md5": "c2acedd490bb6ee404fabb5d7ddf3911",
+      "language": "plpgsql",
+      "parallel": "u",
+      "arguments": "",
+      "leakproof": false,
+      "volatility": "s",
+      "configuration": [
+        "search_path=pg_catalog"
+      ],
+      "full_arguments": "",
+      "security_definer": true
+    },
+    {
+      "acl": [
+        {
+          "grantee": "authenticated",
+          "grantable": false,
+          "privilege": "EXECUTE"
+        },
+        {
+          "grantee": "postgres",
+          "grantable": false,
+          "privilege": "EXECUTE"
+        }
+      ],
+      "cost": 100,
+      "name": "api.kb_library_session_v1",
+      "rows": 0,
+      "owner": "postgres",
+      "strict": false,
+      "returns": "uuid",
+      "body_md5": "21e4da30d2140d59e321d3587c4be382",
+      "language": "sql",
+      "parallel": "u",
+      "arguments": "",
+      "leakproof": false,
+      "volatility": "s",
+      "configuration": [
+        "search_path=pg_catalog"
+      ],
+      "full_arguments": "",
       "security_definer": false
     }
   ]

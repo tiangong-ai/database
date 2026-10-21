@@ -9,7 +9,7 @@ whenToUse: "When implementing, reviewing or adopting the S2 API-key management g
 whenToUpdate: "When S2 identity, permissions, idempotency, compatibility or release gates change."
 checkPaths: [supabase/migrations/*_kb_api_key_management.sql, tests/runtime/api_key_*, tests/upgrade/api_key_*, tests/schema/api_key_catalog.expected.json]
 lastReviewedAt: 2026-10-21
-lastReviewedCommit: 5fd64c0e8aadcd3bd48086ac4a95f586176ea237
+lastReviewedCommit: 915fbe1161c2f498c99395d635206d789624837d
 ---
 
 # S2 API-key management v1

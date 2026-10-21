@@ -239,3 +239,24 @@ heap/legacy-visible rows. The forward correction changes only the two new
 adapters' count projection; it does not repair/rebuild indexes, change RLS,
 relax grants or alter page queries. This is a query-level workaround for the
 observed plan; it does not establish the underlying extension fault's cause.
+
+
+## Live library sessions (database #36 / Web #116)
+
+`20261021123653_kb_library_session.sql` checks the account and session inside
+`api.kb_library_read_v1`, before either page or count authorization. PostgREST
+verifies the JWT signature/expiry; a fixed-search-path private definer requires
+an authenticated actor, a valid UUID `session_id` belonging to that actor, an
+existing non-deleted account, and no active ban. The API invoker wrapper binds
+the private helper statically and returns only the caller UUID. Neither private
+schema USAGE nor Auth table SELECT is granted. Anonymous/service execution is
+denied. The page dispatcher stays invoker; reader RLS and live scoped editor
+checks, including Green Deal, remain unchanged.
+
+A missing/nonstandard session claim fails closed. This matches the verified
+Auth v2.197.0 account/session checks for normal sessions and is stricter for
+missing/foreign session IDs. It does not promise immediate time-box/inactivity
+policy enforcement beyond Auth's existing session lifecycle. Sign-out or admin
+revocation is reflected once the session row is removed; an already executing
+statement retains its transaction snapshot. Browser adoption replaces only
+library page/count transport; other APIs, writes and layout retain getUser.

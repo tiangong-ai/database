@@ -6,7 +6,8 @@ insert into public.reports(id,title) values(md5('library-report')::uuid,'Restric
 create policy library_reports_restricted on public.reports as restrictive for select to authenticated using(false);
 create policy library_journals_restricted on public.journals as restrictive for select to authenticated using(title<>'Library 1');
 insert into private.kb_metadata_editors(actor_id,resource,granted_by) values(md5('library-editor')::uuid,'reports',md5('library-editor')::uuid);
-select set_config('request.jwt.claims',jsonb_build_object('sub',md5('library-reader')::uuid,'role','authenticated')::text,true);
+insert into auth.sessions(id,user_id) values(md5('library-reader-session')::uuid,md5('library-reader')::uuid) on conflict do nothing;
+select set_config('request.jwt.claims',jsonb_build_object('sub',md5('library-reader')::uuid,'role','authenticated','session_id',md5('library-reader-session')::uuid)::text,true);
 set local role authenticated;
 set local plan_cache_mode=force_generic_plan;
 do $$ declare r jsonb; expected jsonb; direction text; p integer; q jsonb; begin
@@ -32,7 +33,8 @@ do $$ declare r jsonb; expected jsonb; direction text; p integer; q jsonb; begin
  begin perform api.kb_library_read_v1('thuHumanities');raise exception 'resource accepted';exception when sqlstate 'PT400' then null;end;
 end $$;
 reset role;
-select set_config('request.jwt.claims',jsonb_build_object('sub',md5('library-editor')::uuid,'role','authenticated')::text,true);
+insert into auth.sessions(id,user_id) values(md5('library-editor-session')::uuid,md5('library-editor')::uuid) on conflict do nothing;
+select set_config('request.jwt.claims',jsonb_build_object('sub',md5('library-editor')::uuid,'role','authenticated','session_id',md5('library-editor-session')::uuid)::text,true);
 set local role authenticated;
 do $$ declare r jsonb; old jsonb; begin
  r:=api.kb_library_read_v1('reports');old:=api.kb_metadata_list_v1('reports','{"sort":"uploaded_time"}');
@@ -65,7 +67,8 @@ insert into auth.users(id,role) values(md5('esg-count-reader')::uuid,'authentica
 insert into public.esg_meta(id,report_title,company_name) values(md5('esg-count-null')::uuid,null,null),(md5('esg-count-visible')::uuid,'Visible report','Count fixture');
 create policy esg_count_restricted on public.esg_meta as restrictive for select to authenticated using(id<>md5('esg-count-null')::uuid);
 insert into private.kb_metadata_editors(actor_id,resource,granted_by) values(md5('esg-count-editor')::uuid,'esg',md5('esg-count-editor')::uuid);
-select set_config('request.jwt.claims',jsonb_build_object('sub',md5('esg-count-reader')::uuid,'role','authenticated')::text,true);
+insert into auth.sessions(id,user_id) values(md5('esg-count-reader-session')::uuid,md5('esg-count-reader')::uuid) on conflict do nothing;
+select set_config('request.jwt.claims',jsonb_build_object('sub',md5('esg-count-reader')::uuid,'role','authenticated','session_id',md5('esg-count-reader-session')::uuid)::text,true);
 set local role authenticated;
 do $$ declare r jsonb; begin
  r:=api.kb_library_read_v1('esg','{}',true);
@@ -73,7 +76,8 @@ do $$ declare r jsonb; begin
  assert jsonb_array_length(api.kb_library_read_v1('esg')->'data')=1,'Reader page/count parity';
 end $$;
 reset role;
-select set_config('request.jwt.claims',jsonb_build_object('sub',md5('esg-count-editor')::uuid,'role','authenticated')::text,true);
+insert into auth.sessions(id,user_id) values(md5('esg-count-editor-session')::uuid,md5('esg-count-editor')::uuid) on conflict do nothing;
+select set_config('request.jwt.claims',jsonb_build_object('sub',md5('esg-count-editor')::uuid,'role','authenticated','session_id',md5('esg-count-editor-session')::uuid)::text,true);
 set local role authenticated;
 do $$ declare r jsonb; begin
  r:=api.kb_library_read_v1('esg','{}',true);
