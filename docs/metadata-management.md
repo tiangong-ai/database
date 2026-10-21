@@ -9,7 +9,7 @@ whenToUse: "When implementing or qualifying six-type metadata management."
 whenToUpdate: "When metadata authorization, RPCs, lifecycle guards or release gates change."
 checkPaths: [supabase/migrations/*_kb_metadata_management.sql, tests/runtime/metadata_*, tests/upgrade/metadata_*, tests/schema/metadata_catalog.expected.json]
 lastReviewedAt: 2026-10-21
-lastReviewedCommit: 5fd64c0e8aadcd3bd48086ac4a95f586176ea237
+lastReviewedCommit: 37bea0613b06014badf528077e5e9479b8f7a0a6
 ---
 
 # Six-resource metadata management v1

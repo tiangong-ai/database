@@ -9,7 +9,7 @@ whenToUse: "Before submitting or integrating database changes."
 whenToUpdate: "When test commands, qualification scope or CI changes."
 checkPaths: [scripts/**, tests/**, .github/workflows/**, .docpact/**]
 lastReviewedAt: 2026-10-21
-lastReviewedCommit: 5fd64c0e8aadcd3bd48086ac4a95f586176ea237
+lastReviewedCommit: 37bea0613b06014badf528077e5e9479b8f7a0a6
 ---
 
 # Validation
@@ -279,3 +279,11 @@ The additive database #32 page/count RPC contract and ordinary/deep-page
 performance bounds are documented in `docs/catalogue-capacity.md`, Split library
 reads. Qualification includes caller RLS, editor grant revocation, snapshot
 versions, real Auth/PostgREST, exact catalog additions and populated upgrades.
+
+
+Library count qualification includes ESG editor/reader counts with restrictive
+RLS and nullable title values, plus the production discrepancy: legacy/heap
+60,095 versus zero-column PGroonga count 0. The new identity projection must
+return the same exact count with live authorization. Synthetic tests do not
+recreate the production index fault; real-data read-only parity remains a
+release gate. No production index rebuild or data mutation is part of the test.

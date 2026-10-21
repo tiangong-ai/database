@@ -9,7 +9,7 @@ whenToUse: "When deciding source ownership, schema scope or generated-path bound
 whenToUpdate: "When schema ownership, imported scope or consumer contracts change."
 checkPaths: [supabase/**, scripts/**, tests/sql/**, docs/source-inventory.json]
 lastReviewedAt: 2026-10-21
-lastReviewedCommit: 5fd64c0e8aadcd3bd48086ac4a95f586176ea237
+lastReviewedCommit: 37bea0613b06014badf528077e5e9479b8f7a0a6
 ---
 
 # Database architecture
@@ -230,3 +230,12 @@ The additive database #32 page/count RPC contract and ordinary/deep-page
 performance bounds are documented in `docs/catalogue-capacity.md`, Split library
 reads. Qualification includes caller RLS, editor grant revocation, snapshot
 versions, real Auth/PostgREST, exact catalog additions and populated upgrades.
+
+
+The independent library count uses the non-null primary key (`count(t.id)`),
+not a zero-column count. Production ESG read-only qualification found
+`count(*)` selecting `esg_title_pgroonga_idx` and returning 0 despite 60,095
+heap/legacy-visible rows. The forward correction changes only the two new
+adapters' count projection; it does not repair/rebuild indexes, change RLS,
+relax grants or alter page queries. This is a query-level workaround for the
+observed plan; it does not establish the underlying extension fault's cause.

@@ -56,3 +56,31 @@ do $$ begin
  assert not (select prosecdef from pg_proc where oid='api.kb_library_read_v1(text,jsonb,boolean)'::regprocedure);
 end $$;
 rollback;
+
+-- Nullable searchable fields are not row identity. Count actual primary keys,
+-- under the same reader/editor authority used by page retrieval.
+begin;
+truncate public.esg_meta cascade;
+insert into auth.users(id,role) values(md5('esg-count-reader')::uuid,'authenticated'),(md5('esg-count-editor')::uuid,'authenticated');
+insert into public.esg_meta(id,report_title,company_name) values(md5('esg-count-null')::uuid,null,null),(md5('esg-count-visible')::uuid,'Visible report','Count fixture');
+create policy esg_count_restricted on public.esg_meta as restrictive for select to authenticated using(id<>md5('esg-count-null')::uuid);
+insert into private.kb_metadata_editors(actor_id,resource,granted_by) values(md5('esg-count-editor')::uuid,'esg',md5('esg-count-editor')::uuid);
+select set_config('request.jwt.claims',jsonb_build_object('sub',md5('esg-count-reader')::uuid,'role','authenticated')::text,true);
+set local role authenticated;
+do $$ declare r jsonb; begin
+ r:=api.kb_library_read_v1('esg','{}',true);
+ assert r->>'total'='1','Reader count retains restrictive RLS';
+ assert jsonb_array_length(api.kb_library_read_v1('esg')->'data')=1,'Reader page/count parity';
+end $$;
+reset role;
+select set_config('request.jwt.claims',jsonb_build_object('sub',md5('esg-count-editor')::uuid,'role','authenticated')::text,true);
+set local role authenticated;
+do $$ declare r jsonb; begin
+ r:=api.kb_library_read_v1('esg','{}',true);
+ assert r->>'total'='2','Editor counts nullable-title rows by identity';
+ assert jsonb_array_length(api.kb_library_read_v1('esg')->'records')=2,'Editor page/count parity';
+ assert r->>'total'=api.kb_metadata_list_v1('esg')->>'total','Legacy editor parity';
+ assert api.kb_library_read_v1('esg','{"q":"Visible"}',true)->>'total'='1','Filtered count preserved';
+end $$;
+reset role;
+rollback;
