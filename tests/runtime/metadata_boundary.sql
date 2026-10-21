@@ -1,7 +1,7 @@
 do $$
 declare f record; r text; t text;
 begin
-  if (select count(*) from pg_proc where pronamespace='api'::regnamespace and proname like 'kb_metadata_%')<>3 then raise exception 'Metadata API count'; end if;
+  if (select count(*) from pg_proc where pronamespace='api'::regnamespace and proname like 'kb_metadata_%')<>4 then raise exception 'Metadata API count'; end if;
   for f in select p.*,n.nspname from pg_proc p join pg_namespace n on n.oid=p.pronamespace where n.nspname in ('api','private') and p.proname like 'kb_metadata_%' loop
     if f.proconfig is distinct from array['search_path=pg_catalog'] or f.prosecdef is distinct from (f.nspname='api') or pg_get_userbyid(f.proowner)<>'postgres' then raise exception 'Metadata attributes drift'; end if;
     foreach r in array array['anon','authenticated','service_role'] loop

@@ -9,7 +9,7 @@ whenToUse: "Before qualifying or releasing the Issue #25 catalogue capacity corr
 whenToUpdate: "When catalogue projection, performance gates or release evidence changes."
 checkPaths: [supabase/migrations/20261020154540_kb_journals_page.sql, tests/sql/kb_journals_page_smoke.sql, supabase/migrations/*kb_catalogue*.sql, tests/performance/catalogue_capacity.sql, tests/sql/kb_catalogue*smoke.sql]
 lastReviewedAt: 2026-10-21
-lastReviewedCommit: 890d2c9760476a2e37970b74d99e995b992fe3ac
+lastReviewedCommit: 5fd64c0e8aadcd3bd48086ac4a95f586176ea237
 ---
 
 # Catalogue browse capacity
@@ -160,3 +160,21 @@ authorized by these diagnostic measurements.
 
 The appended read-scan follow-up explicitly notifies PostgREST to reload its
 schema cache after the additive page RPC. It makes no permission or data change.
+
+
+## Split library reads (database #32)
+
+`20261021092512_kb_library_read.sql` adds `api.kb_library_read_v1` (invoker)
+and `api.kb_metadata_read_v1` (explicit-editor definer). They independently
+return a page with `hasMore` or an exact total. The dispatcher calls the existing
+identity/capability gateway within PostgreSQL, eliminating a second HTTP
+permission round trip. Reader queries retain caller RLS; the editor helper
+rechecks current scoped grants and preserves full-row snapshot/version pairs.
+Both new functions are authenticated-only and do not grant private schema
+access. Existing RPCs, grants, source rows and published migration bytes remain.
+Journals offsets below 1,000 use direct ordered pages; larger offsets preserve
+the sequential visible-ID strategy from #30, without counting in the page.
+The ordinary synthetic page gate is one second, while independent count/deep
+checks retain the existing eight-second request budget. Local SQL, real
+Auth/PostgREST, catalog fingerprints and populated-upgrade gates qualify this
+addition; hosted and production performance must be recorded separately.

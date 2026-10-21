@@ -9,7 +9,7 @@ whenToUse: "When exporting schema, authoring migrations or selecting a database 
 whenToUpdate: "When helper CLI contracts, dependencies or adoption steps change."
 checkPaths: [scripts/**, supabase/config.toml, .env.*.example]
 lastReviewedAt: 2026-10-21
-lastReviewedCommit: 890d2c9760476a2e37970b74d99e995b992fe3ac
+lastReviewedCommit: 5fd64c0e8aadcd3bd48086ac4a95f586176ea237
 ---
 
 # Development
@@ -220,3 +220,9 @@ an automatic PR Preview; local validation does not waive hosted release gates.
 
 Retain all three published candidate migration files; the appended read-scan
 follow-up adds narrow-document filtering and the explicit PostgREST reload.
+
+
+The additive database #32 page/count RPC contract and ordinary/deep-page
+performance bounds are documented in `docs/catalogue-capacity.md`, Split library
+reads. Qualification includes caller RLS, editor grant revocation, snapshot
+versions, real Auth/PostgREST, exact catalog additions and populated upgrades.
