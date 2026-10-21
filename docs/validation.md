@@ -8,8 +8,8 @@ language: en
 whenToUse: "Before submitting or integrating database changes."
 whenToUpdate: "When test commands, qualification scope or CI changes."
 checkPaths: [scripts/**, tests/**, .github/workflows/**, .docpact/**]
-lastReviewedAt: 2026-10-20
-lastReviewedCommit: 626c3eeea29b030cb471c38c8a12cdf7fbab5ec3
+lastReviewedAt: 2026-10-21
+lastReviewedCommit: 890d2c9760476a2e37970b74d99e995b992fe3ac
 ---
 
 # Validation
@@ -251,3 +251,25 @@ rows. The canonical-permission suite also compares complete new page bodies with
 the prior projection. Capacity covers both zero entries/links and 1k links, with
 60k high-entropy 8 KiB document payloads. Production acceptance remains a separate
 ordinary-session gate; isolated speed alone does not prove hosted performance.
+
+### Actual timeout correction (#30)
+
+The Jobs capacity fixture now brackets the observed 179,080 production jobs with
+60,000 synthetic documents and 180,000 jobs; its seven statements retain the
+5-second local bound. The permissions oracle remains unchanged. The upgrade
+probe reapplies the new final body, preserving OID/ACL/signature/settings.
+`kb_journals_page_smoke.sql` compares both UUID directions, partial and empty
+pages against direct RLS reads under forced generic plans, and checks invalid
+inputs and anon/service denial. `catalogue_read.py` also calls the new RPC through
+real local Auth/PostgREST. The existing 1.5m-row capacity fixture adds deep, last
+and empty library pages under the same 8-second request budget. Uncommitted
+synthetic inserts prevent an all-visible-table shortcut.
+Production SELECT/EXPLAIN candidates are diagnostics only; until these migrations
+are deployed and actual application requests pass, hosted recovery is unverified.
+
+The review follow-up additionally tests single-document Jobs access against a
+1000-buffer bound (red before, green after predicate pushdown), plus stage/status/
+worker filtering. Upgrade qualification reapplies all three correction files.
+
+The narrow Jobs buffer gate also forces a generic plan; both document and job
+source branches must retain index probes, not merely pass on a custom first call.

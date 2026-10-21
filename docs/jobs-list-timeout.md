@@ -7,9 +7,9 @@ owner: database
 language: en
 whenToUse: "When reviewing or qualifying the Jobs timeout fix."
 whenToUpdate: "When Jobs query behavior, fixtures or measured evidence changes."
-checkPaths: [supabase/migrations/20261013091317_optimize_kb_admin_jobs_authorization.sql, tests/performance/kb_admin_jobs.sql, tests/sql/kb_admin_jobs_permissions_smoke.sql, tests/runtime/qualify_jobs_upgrade.py]
-lastReviewedAt: 2026-10-13
-lastReviewedCommit: f0bdc521cf147d4649430f25c69eda226315905d
+checkPaths: [supabase/migrations/20261020154538_optimize_kb_admin_jobs_document_scan.sql, supabase/migrations/20261020160222_kb_admin_read_scan_followup.sql, supabase/migrations/20261013091317_optimize_kb_admin_jobs_authorization.sql, tests/performance/kb_admin_jobs.sql, tests/sql/kb_admin_jobs_permissions_smoke.sql, tests/runtime/qualify_jobs_upgrade.py]
+lastReviewedAt: 2026-10-21
+lastReviewedCommit: 890d2c9760476a2e37970b74d99e995b992fe3ac
 ---
 
 # Jobs list timeout investigation
@@ -144,3 +144,43 @@ remains distinct from the synthetic benchmark; no production rows were copied.
 Rollback, if needed after an authorized deployment, is a separately reviewed new
 migration restoring the prior Jobs definition from `202605110001`; never rewrite
 applied migration history or run the legacy filename-ledger runner on production.
+
+## Production follow-up (#30, 2026-10-20)
+
+The prior optimization is deployed, but the real default Jobs request still
+times out. Read-only statistics show approximately 56,677 documents, 179,080
+jobs and five total active grants. The default body plan performs a Merge Join
+through random-UUID document/job indexes; the exact default query still exceeds
+an 8-second diagnostic cap. This is not evidence of missing deployment.
+
+The new forward correction materializes the identical document permission
+predicate first, then joins jobs. A production read-only candidate plan returned
+in 4.867s with sequential scans and a hash join. This is a measured SQL candidate,
+not a deployed RPC or application pass. The fixture is increased to 60k documents
+and 180k jobs; original SQL permissions/filter/sort/empty-page oracles remain.
+The function identity, execution attributes and service-role-only ACL are retained.
+No production maintenance, timeout change, worker operation or business write
+was performed. Paid Preview is declined; required hosted release evidence remains
+outstanding and must not be represented as passed.
+
+Review follow-up: the repeat production candidate plan measured 2.798s, while
+the first production measurement was 4.867s and another repeat was 4.735s; none
+is a local timing or deployed RPC result. Single-document filtering regressed
+from 4.889ms (original body) to 1024.627ms (initial candidate) in read-only SQL.
+The appended follow-up pushes the same document ID restriction into the
+authorized-document CTE; its read-only candidate measured 0.709ms. The original
+post-join filter remains too. Default/filter/count/permission behavior is intact.
+
+The synthetic 60k-document regression first failed a 1000 shared-buffer budget
+for three jobs belonging to one document, then passed with the follow-up. Stage,
+status and worker filters also retain the local 5-second bound. The follow-up
+notifies PostgREST to refresh its schema cache for the preceding additive RPC.
+Original Jobs empty pages still return no count row (Next total 0); this existing
+contract is deliberately unchanged in the timeout fix.
+
+Forced generic-plan testing exposed a second narrow-filter regression: an OR
+predicate alone could still scan all jobs/documents. The final follow-up uses
+mutually exclusive keyed/unkeyed source branches on both tables, so only the
+keyed index probes execute for a document filter even under a reused plan.
+The same 1000-buffer regression fails before and passes after this correction;
+default and stage/status/worker calls also pass with forced generic plans.

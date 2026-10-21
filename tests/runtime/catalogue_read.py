@@ -91,6 +91,15 @@ try:
     assert not ({x['key'] for x in a['rows']}&{x['key'] for x in b['rows']}), 'stable server pages'
     assert catalogue({'page':100})['rows']==[]
     journal=records[0][1]
+    for session in sessions:
+        page=expect(rpc('kb_journals_page_v1',{'p_page':1,'p_page_size':10,'p_dir':'desc'},session),200,'journals session page')
+        assert page['total']==1 and page['data'][0]['id']==journal
+        empty=expect(rpc('kb_journals_page_v1',{'p_page':2},session),200,'journals empty page')
+        assert empty['total']==1 and empty['data']==[]
+    expect(rpc('kb_journals_page_v1',{},anon),401,'journals anonymous denied')
+    expect(rpc('kb_journals_page_v1',{},service),403,'journals service denied')
+    expect(rpc('kb_journals_page_v1',{'p_page':0},sessions[0]),400,'journals invalid page')
+    checks.append('journals ordinary HTTP/RLS pagination, exact empty-page total, anon/service denial')
     sql(f"""insert into public.kb_collections(id,name,path,metadata_schema_json) values
       ('{cid}','{marker}','/{marker}','{{"catalogue_category":"journals"}}'),
       ('{hidden_cid}','Hidden','/{hidden_cid}','{{}}');

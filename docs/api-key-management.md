@@ -9,7 +9,7 @@ whenToUse: "When implementing, reviewing or adopting the S2 API-key management g
 whenToUpdate: "When S2 identity, permissions, idempotency, compatibility or release gates change."
 checkPaths: [supabase/migrations/*_kb_api_key_management.sql, tests/runtime/api_key_*, tests/upgrade/api_key_*, tests/schema/api_key_catalog.expected.json]
 lastReviewedAt: 2026-10-20
-lastReviewedCommit: cf137cb8a8b8105192b54cdfbe44ee96d7aede5c
+lastReviewedCommit: 984422600774bec939157076b9123d4fa07240a0
 ---
 
 # S2 API-key management v1
@@ -234,3 +234,7 @@ allowlist test; it does not change the four S2 functions or their permissions.
 Catalogue identifier RPC exposure (database #27) is explicitly allowlisted by the
 S2 boundary regression. It does not change the four key-management RPCs, grants,
 receipts, verifier behavior or public key storage.
+
+Database #30 adds the authenticated invoker journals page RPC to the global API
+allowlist assertion. All four S2 RPC attributes, ACLs and behavior remain pinned
+by the existing boundary checks.
