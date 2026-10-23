@@ -27,7 +27,7 @@ def main():
     fixture='pre_resource_catalog.expected.json' if a.baseline_only else 'public_catalog.expected.json'
     expected=json.loads(Path(__file__).with_name(fixture).read_text())
     if not a.baseline_only:
-        for fixture in ('resource_catalog.expected.json', 'api_key_catalog.expected.json', 'metadata_catalog.expected.json', 'catalogue_catalog.expected.json'):
+        for fixture in ('resource_catalog.expected.json', 'api_key_catalog.expected.json', 'metadata_catalog.expected.json', 'catalogue_catalog.expected.json', 'overview_catalog.expected.json'):
             additions=json.loads(Path(__file__).with_name(fixture).read_text())
             for kind in ('relations','functions'):
                 original={r['name'] for r in expected[kind]}

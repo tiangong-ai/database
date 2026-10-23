@@ -234,3 +234,39 @@ synthetic users, cleans those identities, and compares account/session denial
 with Auth. Run the standard full gate; use its private consumer target JSON for
 focused iteration. Hosted qualification uses an owned temporary KB Preview and
 synthetic identities, never a production account for ban/revoke/delete tests.
+
+
+## Daily overview operation (#39)
+
+Deploy the reviewed database migration before Web #122. Its first refresh must
+succeed before installation completes; manual refresh and the daily cron command
+use a five-minute statement timeout and five-second lock timeout. Only the owner
+can refresh. A concurrent refresh fails with `OVERVIEW_REFRESH_BUSY`; a failed
+run leaves the previous statistics intact. This does not alter source maintenance.
+
+On an explicitly selected, authorized target, inspect `cron.job` for the named
+`kb-library-overview-daily` job and its active 19:00 UTC schedule. Join that job to
+`cron.job_run_details`, ordered by start_time descending, to check status and
+return_message. Inspect the seven private snapshot rows' refreshed_at values;
+all should belong to one generation. The UI warns after 36 hours and displays
+Asia/Shanghai update time. A missing row stays unavailable, never zero.
+
+After a large import or failed schedule, the authorized owner can run:
+
+```sql
+begin;
+set local statement_timeout = '5min';
+set local lock_timeout = '5s';
+select private.kb_refresh_library_overview_v1();
+commit;
+```
+
+Verify timestamps, seven rows, and an ordinary authenticated API response after
+refresh. Do not grant this operation to browser users or service_role. If a
+current RLS policy permits only some rows, the overview must show unavailable;
+use the live list count for that actor rather than weakening the policy.
+Rollback can restore the prior Web image; the additive table/RPC may remain.
+For a scheduler incident, an authorized owner can deactivate the named job with
+`cron.alter_job(job_id, active := false)` after selecting its exact job ID, then
+investigate and re-enable it. Preserve last-known-good data and migration history.
+Production release still follows the existing preview/authorization gates.

@@ -146,6 +146,7 @@ if (( ${#failed_tests[@]} != 0 )); then
   printf 'Failed SQL tests: %s\n' "${failed_tests[*]}" >&2
   exit 1
 fi
+"$python_bin" "$repo_root/tests/runtime/overview_snapshot.py" "$db_container"
 "$python_bin" "$repo_root/tests/runtime/resource_contract.py" "$db_container"
 "$python_bin" "$repo_root/tests/runtime/resource_delete_concurrency.py" "$db_container"
 run_sql < "$repo_root/tests/schema/resource_boundary.sql"
@@ -220,11 +221,13 @@ mv "$test_root"/metadata-tail/*.sql "$test_root/supabase/migrations/"
 local_cli migration up --local --workdir "$test_root"
 run_sql < "$repo_root/tests/upgrade/metadata_repair_after.sql"
 run_sql < "$repo_root/tests/upgrade/metadata_after.sql"
+run_sql < "$repo_root/tests/sql/kb_library_overview_smoke.sql"
 run_sql < "$repo_root/tests/runtime/metadata_boundary.sql"
 run_sql < "$repo_root/tests/upgrade/resource_boundary_after.sql"
 run_sql < "$repo_root/tests/upgrade/resource_after.sql"
 run_sql -At < "$repo_root/tests/schema/public_catalog.sql" > "$test_root/upgraded-catalog.json"
 "$python_bin" "$repo_root/tests/schema/check_catalog.py" --actual "$test_root/upgraded-catalog.json"
+"$python_bin" "$repo_root/tests/runtime/overview_snapshot.py" "$db_container"
 "$python_bin" "$repo_root/tests/runtime/resource_contract.py" "$db_container"
 "$python_bin" "$repo_root/tests/runtime/resource_delete_concurrency.py" "$db_container"
 run_sql < "$repo_root/tests/schema/resource_boundary.sql"
