@@ -303,8 +303,10 @@ HTTP qualification remain prerequisites to main deployment and browser rollout.
 ## Daily overview snapshot qualification (#39)
 
 The full local gate runs `kb_library_overview_smoke.sql` on clean and populated
-upgrades. It checks initial totals, live-list divergence after insertion, missing
-and stale generations, atomic rollback on refresh failure, editor grant removal,
+upgrades. It compares seven nonempty source totals with the stored generation
+and checks that the refresh owner can bypass forced RLS. It also checks live-list
+divergence after insertion, missing and stale generations, atomic rollback on
+refresh failure, editor grant removal,
 restrictive reader RLS, live session removal, and private/refresh/API ACLs.
 `overview_snapshot.py` uses two owned local SQL sessions to prove single-flight
 refresh and checks transaction-local source table/index scan counters remain zero

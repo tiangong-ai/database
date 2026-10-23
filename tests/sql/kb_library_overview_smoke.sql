@@ -2,7 +2,25 @@ begin;
 insert into auth.users(id,role) values(md5('overview-reader')::uuid,'authenticated');
 insert into auth.sessions(id,user_id) values(md5('overview-session')::uuid,md5('overview-reader')::uuid);
 insert into public.reports(id,title) values(md5('overview-one')::uuid,'overview one');
+-- Distinct nonempty totals catch source mapping and forced-RLS regressions.
+insert into public.journals(id,doi) values(md5('overview-journal')::uuid,'10.0000/overview');
+do $$ declare source text; amount integer:=1; begin
+ foreach source in array array['edu_meta','esg_meta','standards','reports','internal_use','green_deal_meta'] loop
+   amount:=amount+1;
+   execute format('insert into public.%I(id) select md5($1||n)::uuid from generate_series(1,$2) n',source)
+     using 'overview-'||source,amount;
+ end loop;
+ assert (select r.rolsuper or r.rolbypassrls from pg_proc p join pg_roles r on r.oid=p.proowner
+   where p.oid='private.kb_refresh_library_overview_v1()'::regprocedure), 'refresh owner must bypass forced RLS';
+end $$;
 select private.kb_refresh_library_overview_v1();
+do $$ declare item record; actual bigint; begin
+ for item in select * from (values ('journals','journals'),('education','edu_meta'),('esg','esg_meta'),
+   ('standards','standards'),('reports','reports'),('internalUse','internal_use'),('greenDeal','green_deal_meta')) x(resource,source) loop
+   execute format('select count(id) from public.%I',item.source) into actual;
+   assert actual>0 and (select total=actual from private.kb_library_overview_snapshot where resource=item.resource);
+ end loop;
+end $$;
 create temp table overview_before as select * from private.kb_library_overview_snapshot;
 insert into public.reports(id,title) values(md5('overview-two')::uuid,'overview two');
 select set_config('request.jwt.claims',jsonb_build_object('sub',md5('overview-reader')::uuid,'role','authenticated','session_id',md5('overview-session')::uuid)::text,true);
@@ -43,7 +61,8 @@ drop policy overview_restrict on public.reports;
 insert into private.kb_metadata_editors(actor_id,resource,granted_by) values(md5('overview-reader')::uuid,'greenDeal',md5('overview-reader')::uuid);
 set local role authenticated;
 do $$ declare v jsonb:=api.kb_library_overview_v1(); begin
- assert (select x->>'total' is not null from jsonb_array_elements(v->'counts') x where x->>'resource'='greenDeal');
+ assert (api.kb_library_read_v1('greenDeal','{}',true)->>'total')::bigint =
+   (select (x->>'total')::bigint from jsonb_array_elements(v->'counts') x where x->>'resource'='greenDeal');
 end $$;
 reset role;
 update private.kb_metadata_editors set revoked_at=now() where actor_id=md5('overview-reader')::uuid;
