@@ -260,3 +260,30 @@ policy enforcement beyond Auth's existing session lifecycle. Sign-out or admin
 revocation is reflected once the session row is removed; an already executing
 statement retains its transaction snapshot. Browser adoption replaces only
 library page/count transport; other APIs, writes and layout retain getUser.
+
+
+## Daily overview statistics (database #39 / Web #122)
+
+`private.kb_library_overview_snapshot` stores seven exact `count(id)` totals and
+one successful refresh time. The owner-only refresh uses a transaction advisory
+lock and a single UNION ALL / upsert statement, so every total uses one MVCC
+snapshot and failures retain the entire previous generation. No source table,
+index, autovacuum setting or list count RPC changes. Migration seeds the initial
+snapshot and installs `kb-library-overview-daily` at 19:00 UTC (03:00 Asia/Shanghai).
+An unexpected pg_cron timezone aborts installation rather than changing it.
+
+The authenticated-only `api.kb_library_overview_v1` invoker calls a private definer
+that checks the live account/session first. Every read independently checks current
+editor grants. Ordinary readers receive a stored global total only if current
+SELECT privileges and RLS prove unrestricted access: a literal-true applicable
+permissive policy and no non-true applicable restrictive policy (or RLS disabled).
+Unknown/partial reader visibility returns null; Green Deal requires an editor.
+An editor already has whole-resource read authority in the metadata gateway.
+Owner-computed totals remain private and never confer access. No service role,
+private table access or refresh execution is granted to API consumers.
+
+The response carries actorId, seven nullable totals, refreshedAt and stale (>36h).
+Missing statistics remain unavailable; reads never fall back to source counts.
+List queries keep live source/RLS counts and may differ after today's writes.
+The existing per-view list deduplication window is a frontend concern, not a daily
+snapshot. See development for monitoring, owner refresh and rollback.

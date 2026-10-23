@@ -1,0 +1,197 @@
+{
+  "relations": [
+    {
+      "acl": [
+        {
+          "grantee": "postgres",
+          "grantable": false,
+          "privilege": "DELETE"
+        },
+        {
+          "grantee": "postgres",
+          "grantable": false,
+          "privilege": "INSERT"
+        },
+        {
+          "grantee": "postgres",
+          "grantable": false,
+          "privilege": "MAINTAIN"
+        },
+        {
+          "grantee": "postgres",
+          "grantable": false,
+          "privilege": "REFERENCES"
+        },
+        {
+          "grantee": "postgres",
+          "grantable": false,
+          "privilege": "SELECT"
+        },
+        {
+          "grantee": "postgres",
+          "grantable": false,
+          "privilege": "TRIGGER"
+        },
+        {
+          "grantee": "postgres",
+          "grantable": false,
+          "privilege": "TRUNCATE"
+        },
+        {
+          "grantee": "postgres",
+          "grantable": false,
+          "privilege": "UPDATE"
+        }
+      ],
+      "rls": true,
+      "kind": "r",
+      "name": "private.kb_library_overview_snapshot",
+      "owner": "postgres",
+      "columns": [
+        {
+          "name": "resource",
+          "type": "text",
+          "default": null,
+          "identity": "",
+          "not_null": true,
+          "generated": ""
+        },
+        {
+          "name": "total",
+          "type": "bigint",
+          "default": null,
+          "identity": "",
+          "not_null": true,
+          "generated": ""
+        },
+        {
+          "name": "refreshed_at",
+          "type": "timestamp with time zone",
+          "default": null,
+          "identity": "",
+          "not_null": true,
+          "generated": ""
+        }
+      ],
+      "indexes": [
+        {
+          "name": "kb_library_overview_snapshot_pkey",
+          "definition": "CREATE UNIQUE INDEX kb_library_overview_snapshot_pkey ON private.kb_library_overview_snapshot USING btree (resource)"
+        }
+      ],
+      "policies": [],
+      "triggers": [],
+      "force_rls": false,
+      "constraints": [
+        {
+          "name": "kb_library_overview_snapshot_pkey",
+          "type": "p",
+          "validated": true,
+          "definition": "PRIMARY KEY (resource)"
+        },
+        {
+          "name": "kb_library_overview_snapshot_resource_check",
+          "type": "c",
+          "validated": true,
+          "definition": "CHECK (resource = ANY (ARRAY['journals'::text, 'education'::text, 'esg'::text, 'standards'::text, 'reports'::text, 'internalUse'::text, 'greenDeal'::text]))"
+        },
+        {
+          "name": "kb_library_overview_snapshot_total_check",
+          "type": "c",
+          "validated": true,
+          "definition": "CHECK (total >= 0)"
+        }
+      ]
+    }
+  ],
+  "functions": [
+    {
+      "acl": [
+        {
+          "grantee": "authenticated",
+          "grantable": false,
+          "privilege": "EXECUTE"
+        },
+        {
+          "grantee": "postgres",
+          "grantable": false,
+          "privilege": "EXECUTE"
+        }
+      ],
+      "cost": 100,
+      "name": "api.kb_library_overview_v1",
+      "rows": 0,
+      "owner": "postgres",
+      "strict": false,
+      "returns": "jsonb",
+      "body_md5": "6df28b39f542d2ccb2a28d585f4714fe",
+      "language": "sql",
+      "parallel": "u",
+      "arguments": "",
+      "leakproof": false,
+      "volatility": "s",
+      "configuration": [
+        "search_path=pg_catalog"
+      ],
+      "full_arguments": "",
+      "security_definer": false
+    },
+    {
+      "acl": [
+        {
+          "grantee": "authenticated",
+          "grantable": false,
+          "privilege": "EXECUTE"
+        },
+        {
+          "grantee": "postgres",
+          "grantable": false,
+          "privilege": "EXECUTE"
+        }
+      ],
+      "cost": 100,
+      "name": "private.kb_library_overview_v1",
+      "rows": 0,
+      "owner": "postgres",
+      "strict": false,
+      "returns": "jsonb",
+      "body_md5": "e3ecb6b21b6460b84b7d1937881d9c36",
+      "language": "plpgsql",
+      "parallel": "u",
+      "arguments": "",
+      "leakproof": false,
+      "volatility": "s",
+      "configuration": [
+        "search_path=pg_catalog"
+      ],
+      "full_arguments": "",
+      "security_definer": true
+    },
+    {
+      "acl": [
+        {
+          "grantee": "postgres",
+          "grantable": false,
+          "privilege": "EXECUTE"
+        }
+      ],
+      "cost": 100,
+      "name": "private.kb_refresh_library_overview_v1",
+      "rows": 0,
+      "owner": "postgres",
+      "strict": false,
+      "returns": "void",
+      "body_md5": "4a221a54476616d9d57ebbbe264c3c05",
+      "language": "plpgsql",
+      "parallel": "u",
+      "arguments": "",
+      "leakproof": false,
+      "volatility": "v",
+      "configuration": [
+        "search_path=pg_catalog"
+      ],
+      "full_arguments": "",
+      "security_definer": true
+    }
+  ]
+}

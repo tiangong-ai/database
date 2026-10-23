@@ -79,6 +79,9 @@ try:
             result=rpc('kb_library_read_v1',{'p_resource':'journals','p_query':{'page':1,'pageSize':10},'p_count_only':count},token)
             assert (result[0]==200)==allowed,(label,'RPC',result[0])
             if not allowed:assert result[0] in (401,403)
+        overview=rpc('kb_library_overview_v1',{},token)
+        assert (overview[0]==200)==allowed,(label,'overview',overview[0])
+        if allowed: assert overview[1]['actorId']==actor and len(overview[1]['counts'])==7
         checks.append(label)
     check(True,'live session page/count agree with Auth')
     if 'local_jwt_secret' in globals():

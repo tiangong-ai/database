@@ -298,3 +298,20 @@ Existing library reader/editor/RLS, exact counts, deep pages and capacity gates
 now create synthetic Auth session rows before switching role. The catalog adds
 only two session helpers and the dispatcher body; hosted Preview catalog and
 HTTP qualification remain prerequisites to main deployment and browser rollout.
+
+
+## Daily overview snapshot qualification (#39)
+
+The full local gate runs `kb_library_overview_smoke.sql` on clean and populated
+upgrades. It checks initial totals, live-list divergence after insertion, missing
+and stale generations, atomic rollback on refresh failure, editor grant removal,
+restrictive reader RLS, live session removal, and private/refresh/API ACLs.
+`overview_snapshot.py` uses two owned local SQL sessions to prove single-flight
+refresh and checks transaction-local source table/index scan counters remain zero
+on snapshot reads. Policy deparsing can take relation metadata locks; this proof
+does not claim reads bypass concurrent schema changes.
+`library_session.py` also calls the snapshot API through real Auth/PostgREST for
+ordinary, banned, expired-ban, foreign-session, signed-out, deleted and expired
+JWT cases. `overview_catalog.expected.json` adds only the new private relation and
+three functions; legacy catalog fixtures remain unchanged. The cron schedule is
+asserted, but a passing local gate does not establish a hosted daily job ran.

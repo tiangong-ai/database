@@ -5,7 +5,7 @@ begin
   if to_regclass('public.kb_api_keys') is null or to_regclass('private.kb_api_keys') is not null then
     raise exception 'S2 must not relocate kb_api_keys';
   end if;
-  if exists(select from pg_proc where pronamespace='api'::regnamespace and not proname=any(names||array['kb_resource_command','kb_resource_get','kb_metadata_context_v1','kb_metadata_list_v1','kb_metadata_command_v1','kb_catalogue_v1','kb_catalogue_identifier_v1','kb_journals_page_v1','kb_library_read_v1','kb_metadata_read_v1','kb_library_session_v1']))
+  if exists(select from pg_proc where pronamespace='api'::regnamespace and not proname=any(names||array['kb_resource_command','kb_resource_get','kb_metadata_context_v1','kb_metadata_list_v1','kb_metadata_command_v1','kb_catalogue_v1','kb_catalogue_identifier_v1','kb_journals_page_v1','kb_library_read_v1','kb_metadata_read_v1','kb_library_session_v1','kb_library_overview_v1']))
     or (select count(*) from pg_proc where pronamespace='api'::regnamespace and proname=any(names))<>4 then
     raise exception 'Unexpected api surface';
   end if;
