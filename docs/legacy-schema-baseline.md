@@ -8,8 +8,8 @@ language: en
 whenToUse: "When reviewing the production-derived legacy baseline or running consumer qualification."
 whenToUpdate: "When capture scope, privacy guarantees, parity or business-path validation changes."
 checkPaths: [supabase/migrations/**, tests/schema/**, tests/consumers/**, docs/legacy-schema-inventory.json]
-lastReviewedAt: 2026-10-23
-lastReviewedCommit: ff53b4224595c4ae53ed06ad80247fadb8be400a
+lastReviewedAt: "2026-10-29"
+lastReviewedCommit: "4c6804d370f3daca94707d619be27bc0d7d99429"
 ---
 
 # Knowledge Base legacy schema baseline
@@ -197,3 +197,8 @@ all public relation, index, trigger, RLS and ACL expectations remain identical.
 Issue #30 changes only the existing Jobs body fingerprint in the public catalog
 and adds one invoker journals-page function to the additive API catalog. The
 legacy table, index, trigger, RLS, ACL and other function expectations are intact.
+
+SCI parser isolation (#41) adds only `private.sci_parse_jobs` to the separate
+`sci_catalog.expected.json` fixture. Existing public/KB catalog definitions and
+the prior-schema fixture are unchanged. The queue and trusted-role privileges
+are checked by `sci_parse_jobs_smoke.sql` on the owned local runtime.

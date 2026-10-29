@@ -8,8 +8,8 @@ language: en
 whenToUse: "Before submitting or integrating database changes."
 whenToUpdate: "When test commands, qualification scope or CI changes."
 checkPaths: [scripts/**, tests/**, .github/workflows/**, .docpact/**]
-lastReviewedAt: 2026-10-21
-lastReviewedCommit: 37bea0613b06014badf528077e5e9479b8f7a0a6
+lastReviewedAt: "2026-10-29"
+lastReviewedCommit: "4c6804d370f3daca94707d619be27bc0d7d99429"
 ---
 
 # Validation
@@ -317,3 +317,11 @@ ordinary, banned, expired-ban, foreign-session, signed-out, deleted and expired
 JWT cases. `overview_catalog.expected.json` adds only the new private relation and
 three functions; legacy catalog fixtures remain unchanged. The cron schedule is
 asserted, but a passing local gate does not establish a hosted daily job ran.
+
+
+SCI parser isolation is additive: `sci_parse_jobs_smoke.sql` verifies the private
+ledger's RLS/ACL and the real SCI PGMQ send/read/archive path. The additive
+`sci_catalog.expected.json` tracks only the new private table; legacy catalog
+fixtures remain unchanged. Worker lifecycle/duplicate/retry/receipt tests live
+in the owning unstructure repo and are paired with a one-document deployment
+trial; queue depth alone does not establish isolation.

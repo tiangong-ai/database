@@ -8,8 +8,8 @@ language: en
 whenToUse: "When deciding source ownership, schema scope or generated-path boundaries."
 whenToUpdate: "When schema ownership, imported scope or consumer contracts change."
 checkPaths: [supabase/**, scripts/**, tests/sql/**, docs/source-inventory.json]
-lastReviewedAt: 2026-10-21
-lastReviewedCommit: 37bea0613b06014badf528077e5e9479b8f7a0a6
+lastReviewedAt: "2026-10-29"
+lastReviewedCommit: "4c6804d370f3daca94707d619be27bc0d7d99429"
 ---
 
 # Database architecture
@@ -287,3 +287,13 @@ Missing statistics remain unavailable; reads never fall back to source counts.
 List queries keep live source/RLS counts and may differ after today's writes.
 The existing per-view list deduplication window is a frontend concern, not a daily
 snapshot. See development for monitoring, owner refresh and rollback.
+
+
+## Independent SCI parser ledger
+
+`private.sci_parse_jobs` and `kb_sci_parse_queue` isolate SCI submission, polling,
+receipt and retries from unchanged humanities workers. The ledger references
+existing KB document UUIDs; journals metadata remains read-only. Its worker
+implementation is owned by `unstructure/src/sci_parse_worker`. No SCI jobs are
+inserted into legacy `public.kb_jobs`. The table is RLS-enabled and unexposed;
+only backend service access is granted. No new client-facing RPC is introduced.
