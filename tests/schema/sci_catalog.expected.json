@@ -1,0 +1,284 @@
+{
+  "relations": [
+    {
+      "acl": [
+        {
+          "grantee": "postgres",
+          "grantable": false,
+          "privilege": "DELETE"
+        },
+        {
+          "grantee": "postgres",
+          "grantable": false,
+          "privilege": "INSERT"
+        },
+        {
+          "grantee": "postgres",
+          "grantable": false,
+          "privilege": "MAINTAIN"
+        },
+        {
+          "grantee": "postgres",
+          "grantable": false,
+          "privilege": "REFERENCES"
+        },
+        {
+          "grantee": "postgres",
+          "grantable": false,
+          "privilege": "SELECT"
+        },
+        {
+          "grantee": "postgres",
+          "grantable": false,
+          "privilege": "TRIGGER"
+        },
+        {
+          "grantee": "postgres",
+          "grantable": false,
+          "privilege": "TRUNCATE"
+        },
+        {
+          "grantee": "postgres",
+          "grantable": false,
+          "privilege": "UPDATE"
+        },
+        {
+          "grantee": "service_role",
+          "grantable": false,
+          "privilege": "DELETE"
+        },
+        {
+          "grantee": "service_role",
+          "grantable": false,
+          "privilege": "INSERT"
+        },
+        {
+          "grantee": "service_role",
+          "grantable": false,
+          "privilege": "SELECT"
+        },
+        {
+          "grantee": "service_role",
+          "grantable": false,
+          "privilege": "UPDATE"
+        }
+      ],
+      "rls": true,
+      "kind": "r",
+      "name": "private.sci_parse_jobs",
+      "owner": "postgres",
+      "columns": [
+        {
+          "name": "id",
+          "type": "uuid",
+          "default": null,
+          "identity": "",
+          "not_null": true,
+          "generated": ""
+        },
+        {
+          "name": "document_id",
+          "type": "uuid",
+          "default": null,
+          "identity": "",
+          "not_null": true,
+          "generated": ""
+        },
+        {
+          "name": "document_version",
+          "type": "integer",
+          "default": null,
+          "identity": "",
+          "not_null": true,
+          "generated": ""
+        },
+        {
+          "name": "source_sha256",
+          "type": "text",
+          "default": null,
+          "identity": "",
+          "not_null": true,
+          "generated": ""
+        },
+        {
+          "name": "status",
+          "type": "text",
+          "default": "'queued'::text",
+          "identity": "",
+          "not_null": true,
+          "generated": ""
+        },
+        {
+          "name": "phase",
+          "type": "text",
+          "default": "'submit'::text",
+          "identity": "",
+          "not_null": true,
+          "generated": ""
+        },
+        {
+          "name": "attempts",
+          "type": "integer",
+          "default": "0",
+          "identity": "",
+          "not_null": true,
+          "generated": ""
+        },
+        {
+          "name": "max_attempts",
+          "type": "integer",
+          "default": "3",
+          "identity": "",
+          "not_null": true,
+          "generated": ""
+        },
+        {
+          "name": "locked_by",
+          "type": "text",
+          "default": null,
+          "identity": "",
+          "not_null": false,
+          "generated": ""
+        },
+        {
+          "name": "locked_until",
+          "type": "timestamp with time zone",
+          "default": null,
+          "identity": "",
+          "not_null": false,
+          "generated": ""
+        },
+        {
+          "name": "next_retry_at",
+          "type": "timestamp with time zone",
+          "default": null,
+          "identity": "",
+          "not_null": false,
+          "generated": ""
+        },
+        {
+          "name": "pgmq_msg_id",
+          "type": "bigint",
+          "default": null,
+          "identity": "",
+          "not_null": false,
+          "generated": ""
+        },
+        {
+          "name": "payload_json",
+          "type": "jsonb",
+          "default": "'{}'::jsonb",
+          "identity": "",
+          "not_null": true,
+          "generated": ""
+        },
+        {
+          "name": "last_error",
+          "type": "text",
+          "default": null,
+          "identity": "",
+          "not_null": false,
+          "generated": ""
+        },
+        {
+          "name": "created_at",
+          "type": "timestamp with time zone",
+          "default": "now()",
+          "identity": "",
+          "not_null": true,
+          "generated": ""
+        },
+        {
+          "name": "updated_at",
+          "type": "timestamp with time zone",
+          "default": "now()",
+          "identity": "",
+          "not_null": true,
+          "generated": ""
+        },
+        {
+          "name": "finished_at",
+          "type": "timestamp with time zone",
+          "default": null,
+          "identity": "",
+          "not_null": false,
+          "generated": ""
+        }
+      ],
+      "indexes": [
+        {
+          "name": "sci_parse_jobs_one_active",
+          "definition": "CREATE UNIQUE INDEX sci_parse_jobs_one_active ON private.sci_parse_jobs USING btree (document_id) WHERE (status = ANY (ARRAY['queued'::text, 'running'::text]))"
+        },
+        {
+          "name": "sci_parse_jobs_pkey",
+          "definition": "CREATE UNIQUE INDEX sci_parse_jobs_pkey ON private.sci_parse_jobs USING btree (id)"
+        },
+        {
+          "name": "sci_parse_jobs_receivable",
+          "definition": "CREATE INDEX sci_parse_jobs_receivable ON private.sci_parse_jobs USING btree (locked_until, updated_at) WHERE ((status = 'running'::text) AND (phase = 'receive'::text))"
+        }
+      ],
+      "policies": [],
+      "triggers": [],
+      "force_rls": false,
+      "constraints": [
+        {
+          "name": "sci_parse_jobs_attempts_check",
+          "type": "c",
+          "validated": true,
+          "definition": "CHECK (attempts >= 0)"
+        },
+        {
+          "name": "sci_parse_jobs_document_id_fkey",
+          "type": "f",
+          "validated": true,
+          "definition": "FOREIGN KEY (document_id) REFERENCES kb_documents(id)"
+        },
+        {
+          "name": "sci_parse_jobs_document_version_check",
+          "type": "c",
+          "validated": true,
+          "definition": "CHECK (document_version > 0)"
+        },
+        {
+          "name": "sci_parse_jobs_max_attempts_check",
+          "type": "c",
+          "validated": true,
+          "definition": "CHECK (max_attempts > 0)"
+        },
+        {
+          "name": "sci_parse_jobs_payload_json_check",
+          "type": "c",
+          "validated": true,
+          "definition": "CHECK (jsonb_typeof(payload_json) = 'object'::text)"
+        },
+        {
+          "name": "sci_parse_jobs_phase_check",
+          "type": "c",
+          "validated": true,
+          "definition": "CHECK (phase = ANY (ARRAY['submit'::text, 'receive'::text]))"
+        },
+        {
+          "name": "sci_parse_jobs_pkey",
+          "type": "p",
+          "validated": true,
+          "definition": "PRIMARY KEY (id)"
+        },
+        {
+          "name": "sci_parse_jobs_source_sha256_check",
+          "type": "c",
+          "validated": true,
+          "definition": "CHECK (source_sha256 ~ '^[0-9a-f]{64}$'::text)"
+        },
+        {
+          "name": "sci_parse_jobs_status_check",
+          "type": "c",
+          "validated": true,
+          "definition": "CHECK (status = ANY (ARRAY['queued'::text, 'running'::text, 'succeeded'::text, 'dead'::text, 'cancelled'::text]))"
+        }
+      ]
+    }
+  ],
+  "functions": []
+}
