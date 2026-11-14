@@ -1,8 +1,9 @@
 do $$
 begin
+ -- The SCI migration adds one nullable field; compare every existing value.
  if (select snapshot from m1_upgrade_proof.rows_before where kind='collections') is distinct from
     (select to_jsonb(c) from public.kb_collections c where c.id='81000000-0000-4000-8000-000000000001')
- or (select snapshot from m1_upgrade_proof.rows_before where kind='journals') is distinct from
+ or ((select snapshot from m1_upgrade_proof.rows_before where kind='journals') || jsonb_build_object('unstructure_time', null)) is distinct from
     (select to_jsonb(j) from public.journals j where j.id='81000000-0000-4000-8000-000000000002')
  or (select snapshot from m1_upgrade_proof.rows_before where kind='documents') is distinct from
     (select to_jsonb(d) from public.kb_documents d where d.id='81000000-0000-4000-8000-000000000003') then
