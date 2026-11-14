@@ -8,8 +8,8 @@ language: en
 whenToUse: "When integrating M1 resource registration, review or PDF publication."
 whenToUpdate: "When resource RPCs, identity, permissions, snapshots or recovery change."
 checkPaths: [supabase/migrations/*_kb_resource*.sql, tests/runtime/resource_*.py, tests/schema/resource_boundary.sql, tests/upgrade/resource_*.sql]
-lastReviewedAt: 2026-10-18
-lastReviewedCommit: 59abb9666c37ef67096de45e0b8fd103b52c9f5c
+lastReviewedAt: 2026-11-14
+lastReviewedCommit: 70e904ceab16ef1317dae5bc790a953729331151
 ---
 
 # M1 resource identity and document association

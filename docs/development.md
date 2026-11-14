@@ -8,8 +8,8 @@ language: en
 whenToUse: "When exporting schema, authoring migrations or selecting a database target."
 whenToUpdate: "When helper CLI contracts, dependencies or adoption steps change."
 checkPaths: [scripts/**, supabase/config.toml, .env.*.example]
-lastReviewedAt: "2026-10-29"
-lastReviewedCommit: "4c6804d370f3daca94707d619be27bc0d7d99429"
+lastReviewedAt: 2026-11-14
+lastReviewedCommit: 70e904ceab16ef1317dae5bc790a953729331151
 ---
 
 # Development

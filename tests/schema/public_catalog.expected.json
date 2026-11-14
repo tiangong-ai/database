@@ -4132,6 +4132,14 @@
           "name": "abstract",
           "not_null": false,
           "type": "text"
+        },
+        {
+          "default": null,
+          "generated": "",
+          "identity": "",
+          "name": "unstructure_time",
+          "not_null": false,
+          "type": "timestamp with time zone"
         }
       ],
       "constraints": [

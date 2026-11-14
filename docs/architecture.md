@@ -8,8 +8,8 @@ language: en
 whenToUse: "When deciding source ownership, schema scope or generated-path boundaries."
 whenToUpdate: "When schema ownership, imported scope or consumer contracts change."
 checkPaths: [supabase/**, scripts/**, tests/sql/**, docs/source-inventory.json]
-lastReviewedAt: "2026-10-29"
-lastReviewedCommit: "4c6804d370f3daca94707d619be27bc0d7d99429"
+lastReviewedAt: 2026-11-14
+lastReviewedCommit: 9c310a62f91542c0755e71ee353194bda93f2fa2
 ---
 
 # Database architecture
