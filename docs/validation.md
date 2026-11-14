@@ -9,7 +9,7 @@ whenToUse: "Before submitting or integrating database changes."
 whenToUpdate: "When test commands, qualification scope or CI changes."
 checkPaths: [scripts/**, tests/**, .github/workflows/**, .docpact/**]
 lastReviewedAt: 2026-11-14
-lastReviewedCommit: 9c310a62f91542c0755e71ee353194bda93f2fa2
+lastReviewedCommit: 50ec955ff7c098680a4018e2c2105a3df23369d5
 ---
 
 # Validation

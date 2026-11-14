@@ -3,6 +3,557 @@
     {
       "acl": [
         {
+          "grantable": false,
+          "grantee": "postgres",
+          "privilege": "DELETE"
+        },
+        {
+          "grantable": false,
+          "grantee": "postgres",
+          "privilege": "INSERT"
+        },
+        {
+          "grantable": false,
+          "grantee": "postgres",
+          "privilege": "MAINTAIN"
+        },
+        {
+          "grantable": false,
+          "grantee": "postgres",
+          "privilege": "REFERENCES"
+        },
+        {
+          "grantable": false,
+          "grantee": "postgres",
+          "privilege": "SELECT"
+        },
+        {
+          "grantable": false,
+          "grantee": "postgres",
+          "privilege": "TRIGGER"
+        },
+        {
+          "grantable": false,
+          "grantee": "postgres",
+          "privilege": "TRUNCATE"
+        },
+        {
+          "grantable": false,
+          "grantee": "postgres",
+          "privilege": "UPDATE"
+        }
+      ],
+      "columns": [
+        {
+          "default": null,
+          "generated": "",
+          "identity": "",
+          "name": "run_id",
+          "not_null": true,
+          "type": "text"
+        },
+        {
+          "default": "false",
+          "generated": "",
+          "identity": "",
+          "name": "sealed",
+          "not_null": true,
+          "type": "boolean"
+        }
+      ],
+      "constraints": [
+        {
+          "definition": "PRIMARY KEY (run_id)",
+          "name": "sci_backfill_runs_pkey",
+          "type": "p",
+          "validated": true
+        }
+      ],
+      "force_rls": false,
+      "indexes": [
+        {
+          "definition": "CREATE UNIQUE INDEX sci_backfill_runs_pkey ON private.sci_backfill_runs USING btree (run_id)",
+          "name": "sci_backfill_runs_pkey"
+        }
+      ],
+      "kind": "r",
+      "name": "private.sci_backfill_runs",
+      "owner": "postgres",
+      "policies": [],
+      "rls": true,
+      "triggers": []
+    },
+    {
+      "acl": [
+        {
+          "grantable": false,
+          "grantee": "postgres",
+          "privilege": "DELETE"
+        },
+        {
+          "grantable": false,
+          "grantee": "postgres",
+          "privilege": "INSERT"
+        },
+        {
+          "grantable": false,
+          "grantee": "postgres",
+          "privilege": "MAINTAIN"
+        },
+        {
+          "grantable": false,
+          "grantee": "postgres",
+          "privilege": "REFERENCES"
+        },
+        {
+          "grantable": false,
+          "grantee": "postgres",
+          "privilege": "SELECT"
+        },
+        {
+          "grantable": false,
+          "grantee": "postgres",
+          "privilege": "TRIGGER"
+        },
+        {
+          "grantable": false,
+          "grantee": "postgres",
+          "privilege": "TRUNCATE"
+        },
+        {
+          "grantable": false,
+          "grantee": "postgres",
+          "privilege": "UPDATE"
+        }
+      ],
+      "columns": [
+        {
+          "default": null,
+          "generated": "",
+          "identity": "a",
+          "name": "id",
+          "not_null": true,
+          "type": "bigint"
+        },
+        {
+          "default": null,
+          "generated": "",
+          "identity": "",
+          "name": "run_id",
+          "not_null": true,
+          "type": "text"
+        },
+        {
+          "default": null,
+          "generated": "",
+          "identity": "",
+          "name": "bytes",
+          "not_null": false,
+          "type": "bigint"
+        },
+        {
+          "default": null,
+          "generated": "",
+          "identity": "",
+          "name": "sha",
+          "not_null": false,
+          "type": "text"
+        },
+        {
+          "default": null,
+          "generated": "",
+          "identity": "",
+          "name": "vector_count",
+          "not_null": false,
+          "type": "bigint"
+        },
+        {
+          "default": null,
+          "generated": "",
+          "identity": "",
+          "name": "uploaded_at",
+          "not_null": false,
+          "type": "timestamp with time zone"
+        }
+      ],
+      "constraints": [
+        {
+          "definition": "PRIMARY KEY (id)",
+          "name": "sci_backfill_shards_pkey",
+          "type": "p",
+          "validated": true
+        },
+        {
+          "definition": "FOREIGN KEY (run_id) REFERENCES private.sci_backfill_runs(run_id)",
+          "name": "sci_backfill_shards_run_id_fkey",
+          "type": "f",
+          "validated": true
+        }
+      ],
+      "force_rls": false,
+      "indexes": [
+        {
+          "definition": "CREATE UNIQUE INDEX sci_backfill_shards_pkey ON private.sci_backfill_shards USING btree (id)",
+          "name": "sci_backfill_shards_pkey"
+        }
+      ],
+      "kind": "r",
+      "name": "private.sci_backfill_shards",
+      "owner": "postgres",
+      "policies": [],
+      "rls": true,
+      "triggers": []
+    },
+    {
+      "acl": [
+        {
+          "grantable": false,
+          "grantee": "postgres",
+          "privilege": "DELETE"
+        },
+        {
+          "grantable": false,
+          "grantee": "postgres",
+          "privilege": "INSERT"
+        },
+        {
+          "grantable": false,
+          "grantee": "postgres",
+          "privilege": "MAINTAIN"
+        },
+        {
+          "grantable": false,
+          "grantee": "postgres",
+          "privilege": "REFERENCES"
+        },
+        {
+          "grantable": false,
+          "grantee": "postgres",
+          "privilege": "SELECT"
+        },
+        {
+          "grantable": false,
+          "grantee": "postgres",
+          "privilege": "TRIGGER"
+        },
+        {
+          "grantable": false,
+          "grantee": "postgres",
+          "privilege": "TRUNCATE"
+        },
+        {
+          "grantable": false,
+          "grantee": "postgres",
+          "privilege": "UPDATE"
+        }
+      ],
+      "columns": [
+        {
+          "default": "gen_random_uuid()",
+          "generated": "",
+          "identity": "",
+          "name": "id",
+          "not_null": true,
+          "type": "uuid"
+        },
+        {
+          "default": null,
+          "generated": "",
+          "identity": "",
+          "name": "journal_id",
+          "not_null": true,
+          "type": "uuid"
+        },
+        {
+          "default": null,
+          "generated": "",
+          "identity": "",
+          "name": "doi",
+          "not_null": true,
+          "type": "text"
+        },
+        {
+          "default": null,
+          "generated": "",
+          "identity": "",
+          "name": "journal",
+          "not_null": true,
+          "type": "text"
+        },
+        {
+          "default": null,
+          "generated": "",
+          "identity": "",
+          "name": "published_date",
+          "not_null": true,
+          "type": "text"
+        },
+        {
+          "default": null,
+          "generated": "",
+          "identity": "",
+          "name": "parser_node",
+          "not_null": true,
+          "type": "integer"
+        },
+        {
+          "default": null,
+          "generated": "",
+          "identity": "",
+          "name": "mineru_task_id",
+          "not_null": false,
+          "type": "uuid"
+        },
+        {
+          "default": "'queued'::text",
+          "generated": "",
+          "identity": "",
+          "name": "local_state",
+          "not_null": true,
+          "type": "text"
+        },
+        {
+          "default": "0",
+          "generated": "",
+          "identity": "",
+          "name": "local_attempts",
+          "not_null": true,
+          "type": "integer"
+        },
+        {
+          "default": null,
+          "generated": "",
+          "identity": "",
+          "name": "local_published_at",
+          "not_null": false,
+          "type": "timestamp with time zone"
+        },
+        {
+          "default": "'queued'::text",
+          "generated": "",
+          "identity": "",
+          "name": "cloud_state",
+          "not_null": true,
+          "type": "text"
+        },
+        {
+          "default": "0",
+          "generated": "",
+          "identity": "",
+          "name": "cloud_attempts",
+          "not_null": true,
+          "type": "integer"
+        },
+        {
+          "default": null,
+          "generated": "",
+          "identity": "",
+          "name": "lease_owner",
+          "not_null": false,
+          "type": "text"
+        },
+        {
+          "default": null,
+          "generated": "",
+          "identity": "",
+          "name": "lease_until",
+          "not_null": false,
+          "type": "timestamp with time zone"
+        },
+        {
+          "default": null,
+          "generated": "",
+          "identity": "",
+          "name": "opensearch_done_at",
+          "not_null": false,
+          "type": "timestamp with time zone"
+        },
+        {
+          "default": null,
+          "generated": "",
+          "identity": "",
+          "name": "indexed_chunks",
+          "not_null": false,
+          "type": "integer"
+        },
+        {
+          "default": null,
+          "generated": "",
+          "identity": "",
+          "name": "last_error",
+          "not_null": false,
+          "type": "text"
+        },
+        {
+          "default": null,
+          "generated": "",
+          "identity": "",
+          "name": "parquet_at",
+          "not_null": false,
+          "type": "timestamp with time zone"
+        },
+        {
+          "default": null,
+          "generated": "",
+          "identity": "",
+          "name": "run_id",
+          "not_null": false,
+          "type": "text"
+        },
+        {
+          "default": "now()",
+          "generated": "",
+          "identity": "",
+          "name": "scan_at",
+          "not_null": true,
+          "type": "timestamp with time zone"
+        },
+        {
+          "default": null,
+          "generated": "",
+          "identity": "",
+          "name": "local_lease",
+          "not_null": false,
+          "type": "timestamp with time zone"
+        },
+        {
+          "default": null,
+          "generated": "",
+          "identity": "",
+          "name": "pgmq_msg_id",
+          "not_null": false,
+          "type": "bigint"
+        },
+        {
+          "default": null,
+          "generated": "",
+          "identity": "",
+          "name": "parse_submitted_at",
+          "not_null": false,
+          "type": "timestamp with time zone"
+        },
+        {
+          "default": null,
+          "generated": "",
+          "identity": "",
+          "name": "local_failed_at",
+          "not_null": false,
+          "type": "timestamp with time zone"
+        },
+        {
+          "default": null,
+          "generated": "",
+          "identity": "",
+          "name": "staged_at",
+          "not_null": false,
+          "type": "timestamp with time zone"
+        },
+        {
+          "default": null,
+          "generated": "",
+          "identity": "",
+          "name": "stage_bytes",
+          "not_null": false,
+          "type": "bigint"
+        },
+        {
+          "default": null,
+          "generated": "",
+          "identity": "",
+          "name": "stage_sha",
+          "not_null": false,
+          "type": "text"
+        },
+        {
+          "default": null,
+          "generated": "",
+          "identity": "",
+          "name": "shard_id",
+          "not_null": false,
+          "type": "bigint"
+        }
+      ],
+      "constraints": [
+        {
+          "definition": "FOREIGN KEY (journal_id) REFERENCES journals(id)",
+          "name": "sci_ingest_tasks_journal_id_fkey",
+          "type": "f",
+          "validated": true
+        },
+        {
+          "definition": "CHECK (local_attempts >= 0 AND local_attempts <= 3)",
+          "name": "sci_ingest_tasks_local_attempts_check",
+          "type": "c",
+          "validated": true
+        },
+        {
+          "definition": "CHECK (parser_node = ANY (ARRAY[140, 141]))",
+          "name": "sci_ingest_tasks_parser_node_check",
+          "type": "c",
+          "validated": true
+        },
+        {
+          "definition": "PRIMARY KEY (id)",
+          "name": "sci_ingest_tasks_pkey",
+          "type": "p",
+          "validated": true
+        },
+        {
+          "definition": "FOREIGN KEY (run_id) REFERENCES private.sci_backfill_runs(run_id)",
+          "name": "sci_ingest_tasks_run_id_fkey",
+          "type": "f",
+          "validated": true
+        }
+      ],
+      "force_rls": false,
+      "indexes": [
+        {
+          "definition": "CREATE INDEX sci_cloud_scan ON private.sci_ingest_tasks USING btree (run_id, scan_at, id) WHERE ((local_state = 'done'::text) AND (cloud_state = ANY (ARRAY['queued'::text, 'running'::text])))",
+          "name": "sci_cloud_scan"
+        },
+        {
+          "definition": "CREATE INDEX sci_final_lease ON private.sci_ingest_tasks USING btree (run_id, lease_until) WHERE ((local_state = 'done'::text) AND (cloud_state = 'running'::text) AND (cloud_attempts >= 3))",
+          "name": "sci_final_lease"
+        },
+        {
+          "definition": "CREATE UNIQUE INDEX sci_ingest_tasks_pkey ON private.sci_ingest_tasks USING btree (id)",
+          "name": "sci_ingest_tasks_pkey"
+        },
+        {
+          "definition": "CREATE INDEX sci_local_scan ON private.sci_ingest_tasks USING btree (run_id, parser_node, local_state, local_lease, id)",
+          "name": "sci_local_scan"
+        },
+        {
+          "definition": "CREATE UNIQUE INDEX sci_run_doi ON private.sci_ingest_tasks USING btree (run_id, doi)",
+          "name": "sci_run_doi"
+        },
+        {
+          "definition": "CREATE UNIQUE INDEX sci_run_journal ON private.sci_ingest_tasks USING btree (run_id, journal_id)",
+          "name": "sci_run_journal"
+        },
+        {
+          "definition": "CREATE INDEX sci_run_pending ON private.sci_ingest_tasks USING btree (run_id) WHERE ((local_state <> ALL (ARRAY['done'::text, 'failed'::text])) OR ((local_state = 'done'::text) AND (cloud_state = ANY (ARRAY['queued'::text, 'running'::text]))))",
+          "name": "sci_run_pending"
+        },
+        {
+          "definition": "CREATE INDEX sci_shard_members ON private.sci_ingest_tasks USING btree (run_id, shard_id, doi)",
+          "name": "sci_shard_members"
+        },
+        {
+          "definition": "CREATE INDEX sci_stage_pending ON private.sci_ingest_tasks USING btree (run_id, staged_at, id) WHERE ((cloud_state = 'staged'::text) AND (shard_id IS NULL))",
+          "name": "sci_stage_pending"
+        }
+      ],
+      "kind": "r",
+      "name": "private.sci_ingest_tasks",
+      "owner": "postgres",
+      "policies": [],
+      "rls": true,
+      "triggers": []
+    },
+    {
+      "acl": [
+        {
           "grantee": "postgres",
           "grantable": false,
           "privilege": "DELETE"
